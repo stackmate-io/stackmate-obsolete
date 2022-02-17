@@ -2,17 +2,22 @@ import { Token } from 'cdktf';
 import { isEmpty, isUndefined } from 'lodash';
 import { InternetGateway, Subnet, Vpc } from '@cdktf/provider-aws/lib/vpc';
 
-import Networking from '@stackmate/services/networking';
+import Networking from '@stackmate/core/services/networking';
 import { getNetworkingCidrBlocks } from '@stackmate/lib/helpers';
 import { ProviderChoice, RegionList } from '@stackmate/types';
-import { PROVIDER } from '@stackmate/constants';
-import { AWS_REGIONS } from '../constants';
+import { PROVIDER, SERVICE_TYPE } from '@stackmate/constants';
+import { AWS_REGIONS } from '@stackmate/providers/aws/constants';
+import { CloudStack } from '@stackmate/interfaces';
+import { RegisterService } from '@stackmate/lib/decorators';
 
 /**
  * We don't wrap the service with the AwsService mixin
  * because this is a service that gets instantiated when the cloud provider inits
  */
-class AwsVpcService extends Networking {
+const { AWS } = PROVIDER;
+const { NETWORKING } = SERVICE_TYPE;
+
+@RegisterService(AWS, NETWORKING) class AwsVpcService extends Networking {
   /**
  * @var {String} provider the cloud provider used (eg. AWS)
  * @readonly
@@ -64,24 +69,24 @@ class AwsVpcService extends Networking {
     return Token.asString(this.vpc.defaultSecurityGroupId);
   }
 
-  register() {
+  provision(stack: CloudStack) {
     const { vpc, subnet, gateway } = this.resourceProfile;
     const [vpcCidr, ...subnetCidrs] = getNetworkingCidrBlocks(this.ip, 16, 2, 24);
 
-    this.vpc = new Vpc(this.stack, this.identifier, {
+    this.vpc = new Vpc(stack, this.identifier, {
       ...vpc,
       cidrBlock: vpcCidr,
     });
 
     this.subnets = subnetCidrs.map((cidrBlock, idx) => (
-      new Subnet(this.stack, `${this.identifier}-subnet${(idx + 1)}`, {
+      new Subnet(stack, `${this.identifier}-subnet${(idx + 1)}`, {
         ...subnet,
         vpcId: this.vpc.id,
         cidrBlock,
       })
     ));
 
-    this.gateway = new InternetGateway(this.stack, `${this.identifier}-gateway`, {
+    this.gateway = new InternetGateway(stack, `${this.identifier}-gateway`, {
       ...gateway,
       vpcId: this.vpc.id,
     });

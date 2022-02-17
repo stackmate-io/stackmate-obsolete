@@ -2,15 +2,12 @@ import { get } from 'lodash';
 import { Memoize } from 'typescript-memoize';
 
 import Entity from '@stackmate/lib/entity';
-import App from '@stackmate/lib/terraform/app';
-import Stage from '@stackmate/core/stage';
+import Parser from '@stackmate/lib/parsers';
 import { Attribute } from '@stackmate/lib/decorators';
 import { normalizeProject } from '@stackmate/lib/normalizers';
 import { StorageAdapter } from '@stackmate/interfaces';
-import { getStoragAdaptereByType } from '@stackmate/storage';
-import { getVaultByProvider } from '@stackmate/vault';
-import { parseObject, parseString } from '@stackmate/lib/parsers';
-import { PROVIDER, STORAGE, FORMAT, VAULT_PROVIDER } from '@stackmate/constants';
+import { getStoragAdaptereByType } from '@stackmate/core/storage';
+import { PROVIDER, STORAGE, FORMAT, SERVICE_TYPE } from '@stackmate/constants';
 import {
   ProjectConfiguration, NormalizedProjectConfiguration, ProjectDefaults, Validations,
   AttributeParsers, VaultConfiguration, ProviderChoice, StagesNormalizedAttributes,
@@ -35,7 +32,7 @@ class Project extends Entity {
   /**
    * @var {Object} vault the valult configuration
    */
-  @Attribute secrets: VaultConfiguration = { provider: VAULT_PROVIDER.AWS };
+  @Attribute secrets: VaultConfiguration = {};
 
   /**
    * @var {Object} stages the stages declarations
@@ -119,12 +116,12 @@ class Project extends Entity {
    */
   parsers(): AttributeParsers {
     return {
-      name: parseString,
-      region: parseString,
-      provider: parseString,
-      secrets: parseObject,
-      stages: parseObject,
-      defaults: parseObject,
+      name: Parser.parseString,
+      region: Parser.parseString,
+      provider: Parser.parseString,
+      secrets: Parser.parseObject,
+      stages: Parser.parseObject,
+      defaults: Parser.parseObject,
     };
   }
 
@@ -139,30 +136,17 @@ class Project extends Entity {
   }
 
   /**
-  * @var {StorageAdapter} storageAdapter the storage adapter to fetch & push values
+  * @returns {StorageAdapter} storageAdapter the storage adapter to fetch & push values
   */
   @Memoize() public get storage(): StorageAdapter {
     return getStoragAdaptereByType(STORAGE.FILE, { path: this.path, format: FORMAT.YML });
   }
 
-  /**
-   * Selects a workspace to be deployed
-   *
-   * @param {String} stage the workspace's name
-   */
-  select(stage: string) {
-    const { provider = VAULT_PROVIDER.AWS, ...vaultAttributes } = this.secrets;
-
-    const stack = new App(this.name).stack(stage);
-    const vault = getVaultByProvider(stack, provider, vaultAttributes);
-
-    const attributes = {
-      name: stage,
-      services: get(this.stages, stage, {}),
-      defaults: this.defaults,
-    };
-
-    return Stage.factory(stack, vault, attributes);
+  @Memoize() public stage(name: string): object[] {
+    return [
+      { type: SERVICE_TYPE.VAULT, ...this.secrets },
+      ...Object.values(get(this.stages, name, {})),
+    ];
   }
 
   /**
@@ -174,10 +158,9 @@ class Project extends Entity {
    */
   static async load(fileName: string): Promise<Project> {
     const project = new Project(fileName);
-    project.attributes = await project.storage.read();
-    project.validate();
+    const attributes = await project.storage.read();
 
-    return project;
+    return Project.factory(attributes);
   }
 }
 

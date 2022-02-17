@@ -1,14 +1,14 @@
-import { isEmpty, merge } from 'lodash';
+import { merge } from 'lodash';
 import { Memoize } from 'typescript-memoize';
 
 import Entity from '@stackmate/lib/entity';
+import Parser from '@stackmate/lib/parsers';
 import Profile from '@stackmate/core/profile';
 import { Attribute } from '@stackmate/lib/decorators';
 import { CloudService, CloudStack } from '@stackmate/interfaces';
-import { parseArrayToUniqueValues, parseObject, parseString } from '@stackmate/lib/parsers';
 import {
-  RegionList, ServiceAssociation, ProviderChoice, CloudPrerequisites,
-  ServiceTypeChoice, ResourceProfile, ServiceAttributes,
+  RegionList, ServiceAssociation, ProviderChoice,
+  CloudPrerequisites, ServiceTypeChoice, ResourceProfile, ServiceScopeChoice,
 } from '@stackmate/types';
 
 abstract class Service extends Entity implements CloudService {
@@ -26,7 +26,7 @@ abstract class Service extends Entity implements CloudService {
    * @var {ServiceAssociationDeclarations} links the list of service names that the current service
    *                                             is associated (linked) with
    */
-  @Attribute links: Array<string> = [];
+  @Attribute links: string[] = [];
 
   /**
    * @var {String} profile any configuration profile for the service
@@ -37,13 +37,6 @@ abstract class Service extends Entity implements CloudService {
    * @var {Object} overrides any profile overrides to use
    */
   @Attribute overrides: object = {};
-
-  /**
-   * @var {Construct} stack the stack that the service uses
-   * @protected
-   * @readonly
-   */
-  public stack: CloudStack;
 
   /**
    * @var {Array<ServiceAssociation>} associations the list of associations with other services
@@ -81,11 +74,22 @@ abstract class Service extends Entity implements CloudService {
   abstract get isRegistered(): boolean;
 
   /**
-   * Registers the service's resources
+   * Runs a one-off provision
+   *
+   * @param {CloudStack} stack the stack to provision the service in
    * @abstract
    * @void
    */
-  abstract register(): void;
+  abstract once(stack: CloudStack): void;
+
+  /**
+   * Provisions the service's resources
+   *
+   * @param {CloudStack} stack the stack to provision the service in
+   * @abstract
+   * @void
+   */
+  abstract provision(stack: CloudStack): void;
 
   /**
    * Processes the cloud provider's dependencies. Can be used to extract certain information
@@ -93,7 +97,7 @@ abstract class Service extends Entity implements CloudService {
    *
    * @param {Array<Service>} dependencies the dependencies provided by the cloud provider
    */
-  public set dependencies(dependencies: CloudPrerequisites) {
+  set dependencies(dependencies: CloudPrerequisites) {
     // overload this function in services that it's required to parse the cloud dependencies
   }
 
@@ -101,7 +105,7 @@ abstract class Service extends Entity implements CloudService {
    * @returns {String} the service's identifier
    */
   public get identifier(): string {
-    return `${this.name}-${this.stack.name}`.toLowerCase();
+    return `${this.provider}-${this.name}`.toLowerCase();
   }
 
   /**
@@ -142,11 +146,11 @@ abstract class Service extends Entity implements CloudService {
    */
   parsers() {
     return {
-      name: parseString,
-      region: parseString,
-      links: parseArrayToUniqueValues,
-      profile: parseString,
-      overrides: parseObject,
+      name: Parser.parseString,
+      region: Parser.parseString,
+      links: Parser.parseArrayToUniqueValues,
+      profile: Parser.parseString,
+      overrides: Parser.parseObject,
     };
   }
 
@@ -195,29 +199,41 @@ abstract class Service extends Entity implements CloudService {
   }
 
   /**
-   * Instantiates and validates a service
+   * Applies the scope to the service
    *
-   * @param {ServiceAttributes} attributes the service's attributes
-   * @param {Object} stack the terraform stack object
-   * @param {Object} prerequisites any prerequisites by the cloud provider
+   * @param scope the scope to apply to the service
+   * @returns {CloudService} the service with the scope applied
    */
-  static factory<T extends Service>(
-    this: new (...args: any[]) => T,
-    attributes: ServiceAttributes,
-    stack: CloudStack,
-    prerequisites: CloudPrerequisites = {},
-  ): T {
-    const service = new this;
-    service.attributes = attributes;
-    service.stack = stack;
+  scope(scope: ServiceScopeChoice): CloudService {
+    let handlerFunction: (stack: CloudStack) => void;
 
-    if (!isEmpty(prerequisites)) {
-      service.dependencies = prerequisites;
+    switch(scope) {
+      case 'preparable':
+        handlerFunction = this.once;
+        break;
+      case 'provisionable':
+        handlerFunction = this.provision;
+        break;
+      default:
+        throw new Error(`Scope ${scope} is invalid`);
     }
 
-    service.validate();
+    Reflect.set(this, 'register', new Proxy(this.register, {
+      apply: (_target, thisArg, args: [stack: CloudStack]) => {
+        return handlerFunction.apply(thisArg, args);
+      },
+    }));
 
-    return service;
+    return this;
+  }
+
+  /**
+   * Registers the service in the stack
+   *
+   * @param {CloudStack} stack the stack to provision
+   */
+  register(stack: CloudStack) {
+    throw new Error('No scope has been applied, you have to use the `scope` method first');
   }
 }
 

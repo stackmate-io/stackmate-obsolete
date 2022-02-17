@@ -111,7 +111,7 @@ export const getServiceRegisterationResults = async ({
             serviceConfig, cloudStack, prerequisitesGenerator({ stack: cloudStack }),
           );
 
-          service.register();
+          service.provision(cloudStack);
 
           const { variable: variables, ...terraform } = cloudStack.toTerraform();
 
@@ -160,17 +160,17 @@ export const synthesizeProject = async (
   (fs.existsSync as sinon.SinonStub).callThrough();
 
   const project = await Project.load(inputPath);
-  const stage = project.select(stageName);
-
-  stage.prepare();
+  project.select(stageName).prepare();
 
   // Restore the stubs
   readStub.restore();
   existsStub.restore();
 
+  const { stack } = project.stage;
+
   return {
-    stack: stage.stack,
-    scope: JSON.stringify(stage.stack.toTerraform(), null, 2),
-    output: stage.stack.app.outdir,
+    stack,
+    scope: JSON.stringify(stack.toTerraform(), null, 2),
+    output: stack.outputPath,
   };
 };

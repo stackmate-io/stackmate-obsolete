@@ -2,19 +2,31 @@ import { isUndefined } from 'lodash';
 import { Memoize } from 'typescript-memoize';
 import { DbInstance, DbParameterGroup } from '@cdktf/provider-aws/lib/rds';
 
-import Database from '@stackmate/services/database';
-import AwsService from '@stackmate/clouds/aws/mixins';
+import Database from '@stackmate/core/services/database';
+import AwsService from '@stackmate/providers/aws/mixins';
+import { CloudStack, VaultService } from '@stackmate/interfaces';
 import { OneOf } from '@stackmate/types';
+import { RegisterService } from '@stackmate/lib/decorators';
+import { PROVIDER, SERVICE_TYPE } from '@stackmate/constants';
 import {
   RDS_ENGINES,
   RDS_INSTANCE_SIZES,
   RDS_PARAM_FAMILY_MAPPING,
   RDS_MAJOR_VERSIONS_PER_ENGINE,
-} from '@stackmate/clouds/aws/constants';
+} from '@stackmate/providers/aws/constants';
+
+const { AWS } = PROVIDER;
+const { DATABASE: DB } = SERVICE_TYPE;
 
 const AwsDatabaseService = AwsService(Database);
 
-class AwsRdsService extends AwsDatabaseService {
+class ProvisionStrategy {
+}
+
+class CreationStrategy {
+}
+
+@RegisterService(AWS, DB) class AwsRdsService extends AwsDatabaseService {
   /**
    * @var {Array<string>} sizes the list of RDS instance sizes
    */
@@ -82,15 +94,15 @@ class AwsRdsService extends AwsDatabaseService {
     };
   }
 
-  register() {
+  provision(stack: CloudStack, vault: VaultService) {
     const { instance, params } = this.resourceProfile;
 
-    this.paramGroup = new DbParameterGroup(this.stack, `${this.identifier}-params`, {
+    this.paramGroup = new DbParameterGroup(stack, `${this.identifier}-params`, {
       ...params,
       family: this.paramGroupFamily,
     });
 
-    this.instance = new DbInstance(this.stack, this.name, {
+    this.instance = new DbInstance(stack, this.name, {
       ...instance,
       allocatedStorage: this.storage,
       count: this.nodes,
@@ -101,8 +113,10 @@ class AwsRdsService extends AwsDatabaseService {
       name: this.database,
       parameterGroupName: this.paramGroup.name,
       port: this.port,
-      // username: rootUsernameVar.value,
-      // password: rootPasswordVar.value,
+      /** @todo */
+      // provider: this.providerAlias,
+      // username: rootCredentials.username,
+      // password: rootCredentials.password,
       dbSubnetGroupName: `db-subnet-${this.identifier}`,
     });
   }

@@ -2,10 +2,11 @@ import { isEmpty, isFunction, pick, uniq } from 'lodash';
 
 import { validate } from '@stackmate/lib/validation';
 import { BaseEntity } from '@stackmate/interfaces';
-import { AttributeParsers, EntityAttributes, Validations } from '@stackmate/types';
+import { AttributeParsers, ConstructorOf, EntityAttributes, Validations } from '@stackmate/types';
 import { ValidationError } from '@stackmate/lib/errors';
 
 abstract class Entity implements BaseEntity {
+
   /**
    * @returns {Object} the parsers for the attributes
    */
@@ -90,6 +91,8 @@ abstract class Entity implements BaseEntity {
     if (!isEmpty(errors)) {
       throw new ValidationError(this.validationMessage, errors);
     }
+
+    this.initialize();
   }
 
   /**
@@ -141,6 +144,38 @@ abstract class Entity implements BaseEntity {
    */
   get metadataKey(): string {
     return `attributes:${this.constructor.name}`.toLowerCase();
+  }
+
+  /**
+   * Initializes the entity.
+   *
+   * The main issue is that we can't set attributes in the constructor, due to a property
+   * initialization issue in TypeScript. This method runs after the entity has been
+   * instantiated and validated and allows us to perform actions with attributes in place
+   *
+   * @see https://github.com/microsoft/TypeScript/issues/13525
+   * @see https://github.com/microsoft/TypeScript/issues/1617
+   * @see https://github.com/microsoft/TypeScript/issues/10634s
+   * @see https://stackoverflow.com/questions/43595943/why-are-derived-class-property-values-not-seen-in-the-base-class-constructor/43595944
+   */
+  protected initialize(): void {}
+
+  /**
+   * Instantiates and validates an entity
+   *
+   * @param {Object} attributes the entity's attributes
+   * @returns {Entity} the validated entity instance
+   */
+  static factory<T extends BaseEntity>(
+    this: ConstructorOf<T>,
+    attributes: object,
+    ...args: any[]
+  ): T {
+    const entity = new this(...args);
+    entity.attributes = attributes;
+    entity.validate();
+
+    return entity;
   }
 }
 

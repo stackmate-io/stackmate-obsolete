@@ -1,7 +1,7 @@
 import os from 'os';
 import path from 'path';
 import { RegionList } from '@stackmate/types';
-import { AWS_REGIONS } from '@stackmate/clouds/aws/constants';
+import { AWS_REGIONS } from '@stackmate/providers/aws/constants';
 
 export const { env: ENV } = process;
 export const ENVIRONMENT_VARIABLE = {
@@ -20,10 +20,7 @@ export const DEFAULT_OUTPUT_PATH = path.join(os.homedir(), STACKMATE_DIRECTORY, 
 
 export const PROVIDER = {
   AWS: 'aws',
-} as const;
-
-export const VAULT_PROVIDER = {
-  AWS: 'aws',
+  FILE: 'file',
 } as const;
 
 export const SERVICE_TYPE = {
@@ -39,6 +36,8 @@ export const SERVICE_TYPE = {
   LOAD_BALANCER: 'loadbalancer',
   ELASTIC_STORAGE: 'elasticstorage',
   NETWORKING: 'networking',
+  VAULT: 'vault',
+  STATE: 'state',
 } as const;
 
 export const REGION: { [name: string]: RegionList } = {

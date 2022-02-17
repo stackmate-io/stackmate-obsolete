@@ -1,12 +1,11 @@
 import Service from '@stackmate/core/service';
+import Parser from '@stackmate/lib/parsers';
 import { Attribute } from '@stackmate/lib/decorators';
 import { SERVICE_TYPE } from '@stackmate/constants';
-import { parseCredentials, parseInteger, parseString } from '@stackmate/lib/parsers';
-import { CredentialsObject, OneOf, ServiceTypeChoice } from '@stackmate/types';
-import { Rootable, Sizeable, Storable, MultiNode, Versioned } from '@stackmate/interfaces';
+import { OneOf, ServiceTypeChoice } from '@stackmate/types';
+import { Sizeable, Storable, MultiNode, Versioned } from '@stackmate/interfaces';
 
-abstract class Database extends Service implements Sizeable, Storable,
-  Rootable, MultiNode, Versioned {
+abstract class Database extends Service implements Sizeable, Storable, MultiNode, Versioned {
   /**
    * @var {String} type the type for the service
    */
@@ -38,11 +37,6 @@ abstract class Database extends Service implements Sizeable, Storable,
   @Attribute nodes: number;
 
   /**
-   * @var {Credentials} rootCredentials the service's root credentials
-   */
-  @Attribute rootCredentials: CredentialsObject;
-
-  /**
    * @var {String} engine the database engine to use
    */
   @Attribute engine: OneOf<Array<string>>;
@@ -70,14 +64,14 @@ abstract class Database extends Service implements Sizeable, Storable,
   parsers() {
     return {
       ...super.parsers(),
-      nodes: parseInteger,
-      port: parseInteger,
-      size: parseString,
-      storage: parseInteger,
-      engine: parseString,
-      database: parseString,
-      version: parseString,
-      rootCredentials: parseCredentials,
+      nodes: Parser.parseInteger,
+      port: Parser.parseInteger,
+      size: Parser.parseString,
+      storage: Parser.parseInteger,
+      engine: Parser.parseString,
+      database: Parser.parseString,
+      version: Parser.parseString,
+      rootCredentials: Parser.parseCredentials,
     };
   }
 

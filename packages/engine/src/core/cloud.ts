@@ -1,16 +1,23 @@
-import { get } from 'lodash';
-import { TerraformProvider } from 'cdktf';
+import { snakeCase } from 'lodash';
 
 import Entity from '@stackmate/lib/entity';
+import Parser from '@stackmate/lib/parsers';
 import { Attribute } from '@stackmate/lib/decorators';
-import { CloudProvider, CloudService, CloudStack } from '@stackmate/interfaces';
-import { parseString } from '@stackmate/lib/parsers';
-import {
-  CloudPrerequisites, ProviderChoice, RegionList, ServiceMapping,
-  ServiceTypeChoice, ServiceAttributes, CloudAttributes,
-} from '@stackmate/types';
+import { CloudProvider, CloudService, CloudStack, VaultService } from '@stackmate/interfaces';
+import { CloudPrerequisites, ProviderChoice, RegionList, ServiceAttributes } from '@stackmate/types';
+import { ServicesRegistry } from '@stackmate/core/registry';
 
 abstract class Cloud extends Entity implements CloudProvider {
+  /**
+   * @var {String} region the provider's region
+   */
+  @Attribute region: string;
+
+  /**
+   * @var {Boolean} isDefault whether this is the default provider
+   */
+  @Attribute isDefault: boolean;
+
   /**
    * @var {String} provider the provider's name
    * @abstract
@@ -26,11 +33,11 @@ abstract class Cloud extends Entity implements CloudProvider {
   abstract readonly regions: RegionList;
 
   /**
-   * @var {Object} serviceMapping a key value mapping of {service type => class}
-   * @abstract
-   * @readonly
+   * Provisions the cloud
+   * @param {CloudStack} stack the stack to provision
+   * @param {VaultService} vault the vault providing the credentials
    */
-  abstract readonly serviceMapping: ServiceMapping;
+  abstract provision(stack: CloudStack, vault?: VaultService): void;
 
   /**
    * @returns {CloudPrerequisites} the prerequisites for a service that is deployed in this cloud
@@ -38,25 +45,14 @@ abstract class Cloud extends Entity implements CloudProvider {
   abstract prerequisites(): CloudPrerequisites;
 
   /**
-   * Registers the cloud provider into the stack
+   * @var {Map} aliases the provider aliases to use, per region
    */
-  abstract register(): void;
+  readonly aliases: Map<string, string | undefined> = new Map();
 
   /**
-   * @var {String} region the provider's region
+   * @var {String} defaultRegion the default region to deploy core services to
    */
-  @Attribute region: string;
-
-  /**
-   * @var {Stack} stack the stack to use
-   * @readonly
-   */
-  stack: CloudStack;
-
-  /**
-   * @var {TerraformProvider} providerInstance the terraform provider instance
-   */
-  protected providerInstance: TerraformProvider;
+  protected defaultRegion: string;
 
   /**
    * @returns {String} the error message
@@ -70,7 +66,7 @@ abstract class Cloud extends Entity implements CloudProvider {
    */
   parsers() {
     return {
-      region: parseString,
+      region: Parser.parseString,
     };
   }
 
@@ -78,55 +74,44 @@ abstract class Cloud extends Entity implements CloudProvider {
    * @returns {Validations} the validations to use in the entity
    */
   validations() {
+    const regions = Object.values(this.regions);
+
     return {
       region: {
         presence: {
           allowEmpty: false,
-          message: 'You have to provide a region',
+          message: 'You have to provide a region for the provider',
         },
         inclusion: {
-          within: Object.values(this.regions),
-          message: `The region for the ${this.provider} is invalid. Available options are: ${Object.values(this.regions).join(', ')}`,
+          within: regions,
+          message: `The region for this service is invalid. Available options are: ${regions.join(', ')}`,
         },
       },
     };
   }
 
   /**
-   * Registers a service in the cloud services registry
-   *
-   * @param {ServiceTypeChoice} type the type of service to instantiate
-   * @param {ServiceAttributes} attributes the service's attributes
-   * @returns {CloudService} the service that just got registered
+   * @returns {String|undefined} the alias for the provider in the stack (eg. aws_eu_central_1)
    */
-  service(type: ServiceTypeChoice, attributes: ServiceAttributes): CloudService {
-    const ServiceClass = get(this.serviceMapping, type, null);
-
-    if (!ServiceClass) {
-      throw new Error(`Service ${type} for ${this.provider} is not supported, yet`);
+  public get alias() : string | undefined {
+    if (!this.isDefault) {
+      return snakeCase(`${this.provider}_${this.region}`);
     }
-
-    return ServiceClass.factory(attributes, this.stack, this.prerequisites());
   }
 
   /**
-   * Instantiates and validates a cloud provider
+   * Instantiates a set of cloud services based on certain attributes
    *
-   * @param {ServiceAttributes} attributes the service's attributes
-   * @param {Object} stack the terraform stack object
-   * @param {Object} prerequisites any prerequisites by the cloud provider
+   * @param {Array<ServiceAttributes>} serviceAttributes the attributes for the services
+   * @returns {Array<CloudService>} the list of cloud service instances
    */
-  static factory<T extends Cloud>(
-    this: new (...args: any[]) => T,
-    attributes: CloudAttributes,
-    stack: CloudStack,
-  ): T {
-    const cloud = new this;
-    cloud.attributes = attributes;
-    cloud.stack = stack;
-    cloud.validate();
-
-    return cloud;
+  services(serviceAttributes: ServiceAttributes[]): CloudService[] {
+    return serviceAttributes.map(attributes => (
+      ServicesRegistry.get({ type: attributes.type, provider: this.provider }).factory({
+        ...attributes,
+        providerAlias: this.alias,
+      })
+    ));
   }
 }
 

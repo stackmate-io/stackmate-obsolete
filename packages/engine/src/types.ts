@@ -1,8 +1,8 @@
 import { CloudService } from '@stackmate/interfaces';
-import { PROVIDER, SERVICE_TYPE, STORAGE, VAULT_PROVIDER } from '@stackmate/constants';
+import { PROVIDER, SERVICE_TYPE, STORAGE } from '@stackmate/constants';
 
 // Utility types
-export type ConstructorOf<T> = { new(...args: any[]): T };
+export type ConstructorOf<T> = Function & { new(...args: any[]): T };
 export type FactoryOf<T> = { factory(...args: any[]): T; }
 export type AbstractConstructor<T = {}> = abstract new (...args: any[]) => T;
 export type ValueOf<T> = T[keyof T];
@@ -10,8 +10,9 @@ export type ChoiceOf<T> = T[keyof T];
 export type OneOf<T extends ReadonlyArray<unknown>> = T extends ReadonlyArray<infer OneOf> ? OneOf : never;
 export type ServiceTypeChoice = ChoiceOf<typeof SERVICE_TYPE>;
 export type ProviderChoice = ChoiceOf<typeof PROVIDER>;
-export type VaultProviderChoice = ChoiceOf<typeof VAULT_PROVIDER>;
 export type StorageChoice = ChoiceOf<typeof STORAGE>;
+export type CredentialsKeyChoice = OneOf<['username', 'password']>;
+export type ServiceScopeChoice = OneOf<['provisionable', 'preparable']>;
 
 // Config file types
 export type ServiceAssociationDeclarations = Array<string>;
@@ -21,6 +22,10 @@ export type CredentialsObject = {
   username?: string;
   password?: string;
 };
+
+export type CredentialsCollection = {
+  [service: string]: CredentialsObject;
+}
 
 export type ServiceAssociation = {
   lookup: ConstructorOf<CloudService>;
@@ -42,23 +47,17 @@ export type ServiceConfigurationDeclarationNormalized = {
   name: string;
   profile?: string;
   links?: ServiceAssociationDeclarations;
-  credentials?: CredentialsObject;
-  rootCredentials?: CredentialsObject;
 };
 
 // The final attributes that the Service class should expect
-export type ServiceAttributes = Omit<ServiceConfigurationDeclarationNormalized, 'type' | 'provider'>;
+export type ServiceAttributes = ServiceConfigurationDeclarationNormalized;
 
 export type CloudAttributes = {
-  region: string;
+  regions: Array<string>;
   defaults?: ProviderDefaults;
 };
 
 export type ServiceList = Map<string, CloudService>;
-
-export type ServiceMapping = {
-  [name: string]: FactoryOf<CloudService>;
-};
 
 export type RegionList = {
   [name: string]: string;

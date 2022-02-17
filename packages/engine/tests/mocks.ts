@@ -4,14 +4,13 @@ import { inspect } from 'util';
 import App from '@stackmate/lib/terraform/app';
 import Stack from '@stackmate/lib/terraform/stack';
 import Entity from '@stackmate/lib/entity';
+import Parser from '@stackmate/lib/parsers';
 import { AttributeParsers, CloudPrerequisites, Validations } from '@stackmate/types';
 import { CloudStack } from '@stackmate/interfaces';
-import { parseString } from '@stackmate/lib/parsers';
 import { Attribute } from '@stackmate/lib/decorators';
 import { PROVIDER } from '@stackmate/constants';
-import { AWS_REGIONS } from '@stackmate/clouds/aws/constants';
-import { getCloudByProvider } from '@stackmate/clouds';
-import { awsRegion, stackName, appName } from 'tests/fixtures';
+import { AWS_REGIONS } from '@stackmate/providers/aws/constants';
+import { stackName, appName } from 'tests/fixtures';
 
 export const getMockApp = (name: string) => (
   new App(name)
@@ -21,12 +20,10 @@ export const getMockStack = ({ app = getMockApp(appName), name = stackName } = {
   new Stack(app, name)
 );
 
-export const getAwsPrerequisites = ({
-  stack = getMockStack(), region = awsRegion,
-} = {}): CloudPrerequisites => {
+export const getAwsPrerequisites = (): CloudPrerequisites => {
   let aws;
   try {
-    aws = getCloudByProvider(PROVIDER.AWS, { region: AWS_REGIONS.EU_CENTRAL_1 }, stack);
+    aws = getCloudByProvider(PROVIDER.AWS, { regions: Object.values(AWS_REGIONS) });
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(inspect(error, { depth: 20 }));
@@ -49,7 +46,7 @@ export class MockEntity extends Entity {
 
   parsers(): AttributeParsers {
     return {
-      name: parseString,
+      name: Parser.parseString,
       number: multiply,
     };
   }
@@ -77,7 +74,7 @@ export class ExtendedMockEntity extends MockEntity {
   parsers(): AttributeParsers {
     return {
       ...super.parsers(),
-      email: parseString,
+      email: Parser.parseString,
     };
   }
 
