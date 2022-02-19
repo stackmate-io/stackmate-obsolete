@@ -29,13 +29,14 @@ export interface CloudService extends BaseEntity {
   readonly name: string;
   readonly provider: ProviderChoice;
   readonly type: ServiceTypeChoice;
-  readonly associations: Array<ServiceAssociation>;
   region: string;
   links: Array<string>;
   providerAlias?: string;
   identifier: string;
   isRegistered: boolean;
   link(target: CloudService): void;
+  associations(): Array<ServiceAssociation>;
+  isDependingOn(service: CloudService): boolean;
   parsers(): AttributeParsers & Required<{ name: Function, region: Function, links: Function }>;
   validations(): Validations & Required<{ name: object, region: object, links: object }>;
   register(stack: CloudStack): void;

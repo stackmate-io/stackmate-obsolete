@@ -20,24 +20,25 @@ export const DEFAULT_OUTPUT_PATH = path.join(os.homedir(), STACKMATE_DIRECTORY, 
 
 export const PROVIDER = {
   AWS: 'aws',
-  FILE: 'file',
+  LOCAL: 'local',
 } as const;
 
 export const SERVICE_TYPE = {
   CDN: 'cdn',
   DATABASE: 'database',
+  DNS: 'dns',
+  ELASTIC_STORAGE: 'elasticstorage',
   INSTANCE: 'instance',
-  REDIS: 'redis',
+  LOAD_BALANCER: 'loadbalancer',
   MEMCACHED: 'memcached',
   MAILER: 'mailer',
-  VOLUME: 'volume',
-  SSL: 'ssl',
-  DNS: 'dns',
-  LOAD_BALANCER: 'loadbalancer',
-  ELASTIC_STORAGE: 'elasticstorage',
   NETWORKING: 'networking',
-  VAULT: 'vault',
+  PROVIDER: 'provider',
+  REDIS: 'redis',
+  SSL: 'ssl',
   STATE: 'state',
+  VAULT: 'vault',
+  VOLUME: 'volume',
 } as const;
 
 export const REGION: { [name: string]: RegionList } = {
@@ -55,10 +56,4 @@ export const STORAGE: { [name: string]: string } = {
 } as const;
 
 // Service defaults
-
-/**
- * @var {Number} DEFAULT_STORAGE the default storage to apply to services (in Gigabytes)
- */
-export const DEFAULT_STORAGE = 30;
-
 export const DEFAULT_IP = '10.0.0.0';
