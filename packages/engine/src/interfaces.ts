@@ -2,7 +2,7 @@ import { App as TerraformApp, ITerraformResource, TerraformStack } from 'cdktf';
 
 import {
   ProviderChoice, RegionList, ServiceAssociation, AttributeParsers,
-  ServiceTypeChoice, CloudPrerequisites, Validations, EntityAttributes, ConstructorOf, ServiceAttributes, ServiceScopeChoice,
+  ServiceTypeChoice, Validations, EntityAttributes, ConstructorOf, ServiceAttributes, ServiceScopeChoice,
 } from '@stackmate/types';
 
 export interface BaseEntity {
@@ -17,11 +17,10 @@ export interface BaseEntity {
 
 export interface CloudProvider extends BaseEntity {
   readonly provider: ProviderChoice;
-  readonly regions: RegionList;
+  readonly availableRegions: RegionList;
   readonly aliases: Map<string, string | undefined>;
-  prerequisites(): CloudPrerequisites;
-  provision(stack: CloudStack, vault?: VaultService): void;
-  validations(): Validations & Required<{ region: object }>;
+  prerequisites(): ServiceAttributes[];
+  validations(): Validations & Required<{ regions: object }>;
   services(attrs: ServiceAttributes[]): CloudService[];
 }
 
@@ -41,6 +40,9 @@ export interface CloudService extends BaseEntity {
   validations(): Validations & Required<{ name: object, region: object, links: object }>;
   register(stack: CloudStack): void;
   scope(name: ServiceScopeChoice): CloudService;
+  onPrepare(stack: CloudStack): void;
+  onDeploy(stack: CloudStack): void;
+  onDestroy(stack: CloudStack): void;
 }
 
 export interface BaseEntityConstructor<T extends BaseEntity> extends Function {
@@ -103,13 +105,9 @@ export interface CloudApp extends TerraformApp {
 
 export interface CredentialsResource extends ITerraformResource {}
 
-export interface CredentialsProvider {
-  username: CredentialsResource;
-  password: CredentialsResource;
-}
-
 export interface VaultService extends CloudService {
-  for(service: string, opts?: { root: boolean }): CredentialsProvider;
+  username(service: string, root: boolean): CredentialsResource;
+  password(service: string): CredentialsResource;
 }
 
 export interface SubclassRegistry<T> {

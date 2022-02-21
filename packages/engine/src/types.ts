@@ -11,8 +11,7 @@ export type OneOf<T extends ReadonlyArray<unknown>> = T extends ReadonlyArray<in
 export type ServiceTypeChoice = ChoiceOf<typeof SERVICE_TYPE>;
 export type ProviderChoice = ChoiceOf<typeof PROVIDER>;
 export type StorageChoice = ChoiceOf<typeof STORAGE>;
-export type CredentialsKeyChoice = OneOf<['username', 'password']>;
-export type ServiceScopeChoice = OneOf<['provisionable', 'preparable', 'destroyable']>;
+export type ServiceScopeChoice = OneOf<['deployable', 'preparable', 'destroyable']>;
 
 // Config file types
 export type ServiceAssociationDeclarations = Array<string>;
@@ -61,10 +60,6 @@ export type ServiceList = Map<string, CloudService>;
 
 export type RegionList = {
   [name: string]: string;
-};
-
-export type CloudPrerequisites = {
-  [name: string]: CloudService;
 };
 
 export type ProviderDefaults = {
