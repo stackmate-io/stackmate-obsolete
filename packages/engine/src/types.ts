@@ -14,7 +14,7 @@ export type StorageChoice = ChoiceOf<typeof STORAGE>;
 export type ServiceScopeChoice = OneOf<['deployable', 'preparable', 'destroyable']>;
 
 // Config file types
-export type ServiceAssociationDeclarations = Array<string>;
+export type ServiceAssociationDeclarations = string[];
 export type EnvironmentVariablesDeclaration = Record<string, string | number>;
 
 export type CredentialsObject = {
@@ -166,4 +166,8 @@ export type ResourceProfile = {
 export type VaultAttributes = ConfigurationAttributes & {
   key?: string;
   region?: string;
+};
+
+export type PrepareOperationOptions = {
+  statePath: string;
 };

@@ -6,17 +6,17 @@ class Provisioner {
   /**
    * @var {CloudApp} app the terraform application to deploy
    */
-  protected readonly app: CloudApp;
+  readonly app: CloudApp;
 
   /**
    * @var {CloudStack} stack the stack to deploy
    */
-  protected readonly stack: CloudStack;
+  readonly stack: CloudStack;
 
   /**
    * @var {PriorityQueue<CloudService>} queue the sorted priority queue that holds the services
    */
-  protected readonly queue: PriorityQueue<CloudService> = new PriorityQueue();
+  readonly queue: PriorityQueue<CloudService> = new PriorityQueue();
 
   /**
    * @var {Map} dependencies a mapping of service name and the services it depends upon
@@ -52,12 +52,12 @@ class Provisioner {
     services.forEach((service) => {
       // Find the dependencies and dependables for the service
       services.forEach((dep) => {
-        if (service.isDependingOn(dep)) {
+        if (service.isAssociatedWith(dep)) {
           const dependencies = this.dependencies.get(service.name) || [];
           dependencies.push(dep);
 
           this.dependencies.set(service.name, dependencies);
-        } else if (dep.isDependingOn(service)) {
+        } else if (dep.isAssociatedWith(service)) {
           const dependables = this.dependencies.get(service.name) || [];
           dependables.push(service);
 

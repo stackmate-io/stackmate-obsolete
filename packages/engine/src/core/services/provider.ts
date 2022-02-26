@@ -1,47 +1,49 @@
+import { snakeCase } from 'lodash';
+import { TerraformProvider } from 'cdktf';
+
 import Service from '@stackmate/core/service';
-import Parser from '@stackmate/lib/parsers';
 import { SERVICE_TYPE } from '@stackmate/constants';
 import { ServiceTypeChoice } from '@stackmate/types';
-import { Attribute } from '@stackmate/lib/decorators';
+import { CloudStack, ProviderService } from '@stackmate/interfaces';
 
-abstract class Provider extends Service {
-  /**
-   * @var {String} alias the alias for the provider (eg. aws_eu_central_1)
-   */
-  @Attribute alias: string;
-
+abstract class Provider extends Service implements ProviderService {
   /**
    * @var {ServiceTypeChoice} type the service's type
    */
   readonly type: ServiceTypeChoice = SERVICE_TYPE.PROVIDER;
 
   /**
-   * @returns {Object} the parser functions to apply to the service's attributes
+   * @var {TerraformProvider} resource the provider resource
    */
-  parsers() {
-    return {
-      ...super.parsers(),
-      alias: Parser.parseString,
-    };
+  resource: TerraformProvider;
+
+  /**
+   * @returns {Boolean} whether the provider has been registered
+   */
+  get isRegistered(): boolean {
+    return this.resource instanceof TerraformProvider;
   }
 
   /**
-   * @returns {Validations} the validations for the service
+   * @returns {String} the alias to use for the provider
    */
-  validations() {
-    return {
-      ...super.validations(),
-      alias: {
-        presence: {
-          allowEmpty: false,
-        },
-        format: {
-          pattern: '^([0-9A-Za-z_]+)$',
-          message: 'Please provide a valid alias for the provider',
-        }
-      },
-    };
+  public get alias(): string {
+    return `${snakeCase(this.provider)}_${snakeCase(this.region)}`;
   }
+
+  /**
+   * Registers the provider's resource to the stack
+   *
+   * @param {CloudStack} stack the stack to register the provider to
+   */
+  abstract bootstrap(stack: CloudStack): void;
+
+  /**
+   * Provisions the cloud prerequisites to the stack
+   *
+   * @param {CloudProvider} stack the stack to deploy the prerequisites to
+   */
+  abstract prerequisites(stack: CloudStack): void;
 }
 
 export default Provider;

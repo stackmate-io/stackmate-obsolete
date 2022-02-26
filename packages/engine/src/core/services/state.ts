@@ -1,9 +1,9 @@
 import Service from '@stackmate/core/service';
 import { ServiceTypeChoice } from '@stackmate/types';
 import { SERVICE_TYPE } from '@stackmate/constants';
-import { CloudStack } from '@stackmate/interfaces';
+import { CloudStack, StateService } from '@stackmate/interfaces';
 
-abstract class State extends Service {
+abstract class State extends Service implements StateService {
   /**
    * @var {ServiceTypeChoice} type the service's type
    */
@@ -14,12 +14,12 @@ abstract class State extends Service {
    *
    * @param {CloudStack} stack the stack to deploy the resource to
    */
-  abstract resource(stack: CloudStack): void;
+  abstract resources(stack: CloudStack): void;
 
   /**
-   * Provisions a data resource for the state
+   * Provisions a data resources for the state
    *
-   * @param {CloudStack} stack the stack to deploy the resource to
+   * @param {CloudStack} stack the stack to deploy the resources to
    */
   abstract data(stack: CloudStack): void;
 
@@ -30,7 +30,7 @@ abstract class State extends Service {
    * @void
    */
   onPrepare(stack: CloudStack): void {
-    this.resource(stack);
+    this.resources(stack);
   }
 
   /**

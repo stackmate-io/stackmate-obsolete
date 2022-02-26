@@ -1,14 +1,12 @@
 import { Memoize } from 'typescript-memoize';
-import { isEmpty, merge } from 'lodash';
+import { isEmpty, isObject, merge } from 'lodash';
 
 import Entity from '@stackmate/lib/entity';
 import Parser from '@stackmate/lib/parsers';
 import Profile from '@stackmate/core/profile';
-import Vault from '@stackmate/core/services/vault';
-import Provider from '@stackmate/core//services/provider';
 import { Attribute } from '@stackmate/lib/decorators';
 import { SERVICE_TYPE } from '@stackmate/constants';
-import { CloudService, CloudStack } from '@stackmate/interfaces';
+import { CloudService, CloudStack, ProviderService, VaultService } from '@stackmate/interfaces';
 import {
   RegionList, ServiceAssociation, ProviderChoice,
   ServiceTypeChoice, ResourceProfile, ServiceScopeChoice,
@@ -26,7 +24,7 @@ abstract class Service extends Entity implements CloudService {
   @Attribute region: string;
 
   /**
-   * @var {ServiceAssociationDeclarations} links the list of service names that the current service
+   * @var {String[]} links the list of service names that the current service
    *                                             is associated (linked) with
    */
   @Attribute links: string[] = [];
@@ -42,14 +40,9 @@ abstract class Service extends Entity implements CloudService {
   @Attribute overrides: object = {};
 
   /**
-   * @var {Array<String>} regions the regions that the service is available in
+   * @var {Object} regions the regions that the service is available in
    */
   readonly regions: RegionList = {};
-
-  /**
-   * @var {String} providerAlias the provider alias
-   */
-  providerAlias?: string | undefined;
 
   /**
    * @var {String} type the service's type
@@ -69,6 +62,16 @@ abstract class Service extends Entity implements CloudService {
    * @returns {Boolean} whether the service is registered in the stack
    */
   abstract get isRegistered(): boolean;
+
+  /**
+   * @var {ProviderService} cloudProvider the cloud provider service
+   */
+  providerService: ProviderService;
+
+  /**
+   * @var {Vault} vault the vault service to get credentials from
+   */
+  vault: VaultService;
 
   /**
    * Provisioning when we initially prepare a stage
@@ -100,9 +103,20 @@ abstract class Service extends Entity implements CloudService {
   }
 
   /**
-   * @var {Vault} vault the vault service to get credentials from
+   * Callback to run when the cloud provider has been registered
+   * @param {ProviderService} provider the provider service
    */
-  protected vault: Vault;
+  onProviderRegistered(provider: ProviderService) {
+    this.providerService = provider;
+  }
+
+  /**
+   * Callback to run when the vault service has been registered
+   * @param {CloudService} vault the vault service
+   */
+  onVaultRegistered(vault: VaultService) {
+    this.vault = vault;
+  }
 
   /**
    * @returns {String} the service's identifier
@@ -149,23 +163,11 @@ abstract class Service extends Entity implements CloudService {
    * @returns {Object} the validations to use
    */
   validations() {
-    const regions = Object.values(this.regions);
-
-    return {
+    const validations = {
       name: {
         presence: {
           allowEmpty: false,
           message: 'Every service should have a name',
-        },
-      },
-      region: {
-        presence: {
-          allowEmpty: false,
-          message: 'A region should be provided',
-        },
-        inclusion: {
-          within: regions,
-          message: `The region for this service is invalid. Available options are: ${regions.join(', ')}`,
         },
       },
       links: {
@@ -185,6 +187,25 @@ abstract class Service extends Entity implements CloudService {
         },
       },
     };
+
+    // Only require region to be present if the regions attribute is present
+    if (isObject(this.regions) && !isEmpty(this.regions)) {
+      const regions = Object.values(this.regions);
+      Object.assign(validations, {
+        region: {
+          presence: {
+            allowEmpty: false,
+            message: 'A region should be provided',
+          },
+          inclusion: {
+            within: regions,
+            message: `The region for this service is invalid. Available options are: ${regions.join(', ')}`,
+          },
+        },
+      });
+    }
+
+    return validations;
   }
 
   /**
@@ -211,28 +232,12 @@ abstract class Service extends Entity implements CloudService {
     }
 
     Reflect.set(this, 'register', new Proxy(this.register, {
-      apply: (_target, thisArg, args: [stack: CloudStack]) => {
-        return handlerFunction.apply(thisArg, args);
-      },
+      apply: (_target, thisArg, args: [stack: CloudStack]) => (
+        handlerFunction.apply(thisArg, args)
+      ),
     }));
 
     return this;
-  }
-
-  /**
-   * Callback to run when the cloud provider has been registered
-   * @param {CloudService} provider the provider service
-   */
-  onCloudProviderRegistered(provider: Provider) {
-    this.providerAlias = provider.alias;
-  }
-
-  /**
-   * Callback to run when the vault service has been registered
-   * @param {CloudService} vault the vault service
-   */
-  onVaultRegistered(vault: Vault) {
-    this.vault = vault;
   }
 
   /**
@@ -245,7 +250,7 @@ abstract class Service extends Entity implements CloudService {
   }
 
   /**
-   * @returns {Array<ServiceAssociation>} the pairs of lookup and handler functions
+   * @returns {ServiceAssociation[]} the pairs of lookup and handler functions
    */
   @Memoize() public associations(): ServiceAssociation[] {
     return [{
@@ -254,9 +259,9 @@ abstract class Service extends Entity implements CloudService {
           && srv.region === this.region
           && srv.provider === this.provider
       ),
-      handler: this.onCloudProviderRegistered.bind(this),
+      handler: this.onProviderRegistered.bind(this),
     }, {
-      lookup: (srv: CloudService) => (srv instanceof Vault && srv.type === SERVICE_TYPE.VAULT),
+      lookup: (srv: CloudService) => (srv.type === SERVICE_TYPE.VAULT),
       handler: this.onVaultRegistered.bind(this),
     }];
   }
@@ -265,7 +270,7 @@ abstract class Service extends Entity implements CloudService {
    * @param {CloudService} service the service to check whether the current one is depending on
    * @returns {Boolean} whether the current service is depending upon the provided one
    */
-  isDependingOn(service: CloudService): boolean {
+  isAssociatedWith(service: CloudService): boolean {
     // We're comparing with the current service itself
     if (this.identifier === service.identifier) {
       return false;
@@ -294,6 +299,10 @@ abstract class Service extends Entity implements CloudService {
 
     if (this.isRegistered) {
       throw new Error('The service is already registered to the stack, we can’t link the service');
+    }
+
+    if (!this.isAssociatedWith(target)) {
+      throw new Error(`Service ${this.name} is not associated with the ${target.name || target.type} service`);
     }
 
     // Find the handlers that apply to the associated service

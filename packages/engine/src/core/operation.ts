@@ -1,13 +1,18 @@
 import { Memoize } from 'typescript-memoize';
-import { groupBy, map } from 'lodash';
+import { groupBy } from 'lodash';
 
 import Project from '@stackmate/core/project';
 import Provisioner from '@stackmate/core/provisioner';
-import { CloudRegistry } from '@stackmate/core/registry';
+import ServicesRegistry from '@stackmate/core/registry';
 import { SERVICE_TYPE } from '@stackmate/constants';
 import { CloudService } from '@stackmate/interfaces';
 
 abstract class Operation {
+  /**
+   * @var {Provisioner} provisioner the stack handler & provisioner
+   */
+  readonly provisioner: Provisioner;
+
   /**
    * @var {Project} project the project to deploy
    */
@@ -17,11 +22,6 @@ abstract class Operation {
    * @var {String} stage the stage to deploy
    */
   protected readonly stageName: string;
-
-  /**
-   * @var {Provisioner} provisioner the stack handler & provisioner
-   */
-  protected readonly provisioner: Provisioner;
 
   /**
    * @var {Object} options any additional options for the operation
@@ -45,22 +45,22 @@ abstract class Operation {
    * @returns {Array<CloudService>} the list of services associated with the stage
    */
   @Memoize() get services() {
-    const { secrets, stages: { [this.stageName]: stageServices } } = this.project;
-
-    const allServices = [
-      { type: SERVICE_TYPE.VAULT, ...secrets },
-      ...Object.values(stageServices),
-    ];
-
+    const { PROVIDER, VAULT } = SERVICE_TYPE;
     const instances: CloudService[] = [];
-    const groupped = groupBy(allServices, 'provider');
+    const { secrets: vault, stages: { [this.stageName]: stage } } = this.project;
+    const stageServices = [{ type: VAULT, ...vault }, ...Object.values(stage)];
 
-    Object.keys(groupped).map(provider => {
-      const serviceAttributes = groupped[provider];
-      const regions = map(serviceAttributes, 'region');
+    const services = groupBy(stageServices, 'provider');
+    Object.keys(services).map(provider => {
+      const servicesPerRegion = groupBy(services[provider], 'region');
 
-      const cloud = CloudRegistry.get({ provider }).factory({ regions });
-      instances.push(...cloud.services(serviceAttributes));
+      Object.keys(servicesPerRegion).forEach(region => {
+        const services = [{ type: PROVIDER, provider, region }, ...servicesPerRegion[region]];
+
+        instances.push(
+          ...services.map(srv => ServicesRegistry.get({ type: srv.type, provider }).factory(srv)),
+        );
+      });
     });
 
     return instances;
