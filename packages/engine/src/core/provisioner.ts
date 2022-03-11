@@ -1,6 +1,8 @@
 import App from '@stackmate/lib/terraform/app';
 import PriorityQueue from '@stackmate/lib/queue';
 import { CloudApp, CloudService, CloudStack } from '@stackmate/interfaces';
+import { SERVICE_TYPE } from '@stackmate/constants';
+import { ServiceTypeChoice } from '@stackmate/types';
 
 class Provisioner {
   /**
@@ -20,13 +22,24 @@ class Provisioner {
 
   /**
    * @var {Map} dependencies a mapping of service name and the services it depends upon
+   *                         ie. they should be registered before service.name is registered
    */
   protected readonly dependencies: Map<string, CloudService[]> = new Map();
 
   /**
    * @var {Map} dependables a mapping of service name and the services that depend upon it
+   *                        ie. service.name should be registered before the dependables are
    */
   protected readonly dependables: Map<string, CloudService[]> = new Map();
+
+  /**
+   * @var {ServiceTypeChoice[]} highPriority the service types that should be higher in the queue
+   */
+  protected readonly weights: Map<ServiceTypeChoice, number> = new Map([
+    [SERVICE_TYPE.PROVIDER, 100000],
+    [SERVICE_TYPE.STATE, 99999],
+    [SERVICE_TYPE.VAULT, 99998],
+  ]);
 
   /**
    * @constructor
@@ -58,8 +71,8 @@ class Provisioner {
 
           this.dependencies.set(service.name, dependencies);
         } else if (dep.isAssociatedWith(service)) {
-          const dependables = this.dependencies.get(service.name) || [];
-          dependables.push(service);
+          const dependables = this.dependables.get(service.name) || [];
+          dependables.push(dep);
 
           this.dependables.set(service.name, dependables);
         }
@@ -89,10 +102,15 @@ class Provisioner {
 
   /**
    * Calculates the priority for a service
+   *
+   * The weight is defined as:
+   *    the number assigned in the weights mapping for certain services, zero otherwises
+   *
    * The priority is defined as:
-   *  the amount of services that depend on the service specified
-   *    minus
-   *  the amount of services that the service specified depends on
+   *
+   *    the amount of services that depend on the service specified
+   *      minus
+   *    the amount of services that the service specified depends on
    *
    * @param {CloudService} service the service to calculate the priority for
    * @returns {Number} the service's priority
@@ -100,8 +118,9 @@ class Provisioner {
   protected priority(service: CloudService): number {
     const dependables = this.dependables.get(service.name) || [];
     const dependencies = this.dependencies.get(service.name) || [];
+    const weight = this.weights.get(service.type) || 0;
 
-    return dependables.length - dependencies.length;
+    return weight + dependables.length - dependencies.length;
   }
 }
 

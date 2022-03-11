@@ -1,14 +1,15 @@
+import { Testing } from 'cdktf';
 import { InternetGateway, Subnet, Vpc } from '@cdktf/provider-aws/lib/vpc';
 import 'cdktf/lib/testing/adapters/jest';
 
+import { deployProject } from 'tests/helpers';
 import { PROVIDER, SERVICE_TYPE } from '@stackmate/constants';
 import { DEFAULT_RDS_INSTANCE_SIZE } from '@stackmate/providers/aws/constants';
 import { awsRegion, awsKeyArn } from 'tests/fixtures';
-import { synthesizeProject } from 'tests/helpers';
 import { DbInstance, DbParameterGroup } from '@cdktf/provider-aws/lib/rds';
-import { Testing } from 'cdktf';
+import { normalizeProject } from '@stackmate/lib/normalizers';
 
-const projectConfig = {
+const projectConfig = normalizeProject({
   name: 'database-only-project',
   provider: PROVIDER.AWS,
   region: awsRegion,
@@ -29,11 +30,11 @@ const projectConfig = {
       },
     },
   },
-};
+});
 
 describe('Database only project', () => {
   it('registers the production stage for the project', async () => {
-    const { scope, stack } = await synthesizeProject(projectConfig);
+    const { scope, stack } = await deployProject(projectConfig);
 
     expect(Testing.fullSynth(stack)).toBeValidTerraform();
 
@@ -68,8 +69,9 @@ describe('Database only project', () => {
       engine_version: '8.0',
       identifier: 'mysqldatabase-production',
       instance_class: 'db.t3.micro',
+      multi_az: false,
       port: 3306,
-      publicly_accessible: true,
+      publicly_accessible: false,
       skip_final_snapshot: false,
       storage_type: 'gp2',
     });

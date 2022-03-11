@@ -1,4 +1,4 @@
-import { get, isUndefined } from 'lodash';
+import { isUndefined } from 'lodash';
 import { Memoize } from 'typescript-memoize';
 import { DbInstance, DbParameterGroup } from '@cdktf/provider-aws/lib/rds';
 
@@ -6,21 +6,17 @@ import Database from '@stackmate/core/services/database';
 import AwsService from '@stackmate/providers/aws/mixins';
 import { OneOf } from '@stackmate/types';
 import { CloudStack } from '@stackmate/interfaces';
-import { RegisterService } from '@stackmate/lib/decorators';
-import { PROVIDER, SERVICE_TYPE } from '@stackmate/constants';
 import {
   RDS_ENGINES,
   RDS_INSTANCE_SIZES,
   RDS_PARAM_FAMILY_MAPPING,
   RDS_MAJOR_VERSIONS_PER_ENGINE,
+  RDS_LOG_EXPORTS_PER_ENGINE,
 } from '@stackmate/providers/aws/constants';
-
-const { AWS } = PROVIDER;
-const { DATABASE: DB } = SERVICE_TYPE;
 
 const AwsDatabaseService = AwsService(Database);
 
-@RegisterService(AWS, DB) class AwsRdsService extends AwsDatabaseService {
+class AwsRdsService extends AwsDatabaseService {
   /**
    * @var {Array<string>} sizes the list of RDS instance sizes
    */
@@ -53,8 +49,7 @@ const AwsDatabaseService = AwsService(Database);
     return !isUndefined(this.instance) && !isUndefined(this.paramGroup);
   }
 
-  @Memoize()
-  public get paramGroupFamily() {
+  @Memoize() public get paramGroupFamily() {
     const triad = RDS_PARAM_FAMILY_MAPPING.find(
       ([engine, version]) => engine === this.engine && this.version.startsWith(version),
     );
@@ -82,7 +77,7 @@ const AwsDatabaseService = AwsService(Database);
           message: 'You have to specify the database version to run',
         },
         validateVersion: {
-          availableVersions: get(RDS_MAJOR_VERSIONS_PER_ENGINE, this.engine, []),
+          availableVersions: RDS_MAJOR_VERSIONS_PER_ENGINE.get(this.engine) || [],
         },
       },
     };
@@ -90,6 +85,7 @@ const AwsDatabaseService = AwsService(Database);
 
   onDeploy(stack: CloudStack): void {
     const { instance, params } = this.resourceProfile;
+    const { username, password } = this.vault.credentials(stack, this.name, { root: true });
 
     this.paramGroup = new DbParameterGroup(stack, `${this.identifier}-params`, {
       ...params,
@@ -100,17 +96,21 @@ const AwsDatabaseService = AwsService(Database);
       ...instance,
       allocatedStorage: this.storage,
       count: this.nodes,
-      identifier: this.identifier,
+      enabledCloudwatchLogsExports: RDS_LOG_EXPORTS_PER_ENGINE.get(this.engine),
       engine: this.engine,
       engineVersion: this.version,
+      identifier: this.identifier,
       instanceClass: this.size,
       name: this.database,
       parameterGroupName: this.paramGroup.name,
       port: this.port,
       provider: this.providerService.resource,
-      username: this.vault.username(this.name, true),
-      password: this.vault.password(this.name),
       dbSubnetGroupName: `db-subnet-${this.identifier}`,
+      username,
+      password,
+      lifecycle: {
+        createBeforeDestroy: true,
+      },
     });
   }
 }

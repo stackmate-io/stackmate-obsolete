@@ -3,7 +3,7 @@ import { App as TerraformApp, TerraformProvider, TerraformStack } from 'cdktf';
 import {
   ProviderChoice, ServiceAssociation, AttributeParsers,
   ServiceScopeChoice, AbstractConstructor, ConstructorOf,
-  ServiceTypeChoice, Validations, EntityAttributes,
+  ServiceTypeChoice, Validations, EntityAttributes, CredentialsObject, VaultCredentialOptions,
 } from '@stackmate/types';
 
 export interface BaseEntity {
@@ -23,8 +23,11 @@ export interface CloudService extends BaseEntity {
   region: string;
   links: Array<string>;
   identifier: string;
+  providerService: ProviderService;
+  vault: VaultService;
+  isAuthenticatable: boolean;
   get isRegistered(): boolean;
-  link(target: CloudService): void;
+  link(...targets: CloudService[]): CloudService;
   associations(): ServiceAssociation[];
   isAssociatedWith(service: CloudService): boolean;
   parsers(): AttributeParsers & Required<{ name: Function, links: Function }>;
@@ -95,8 +98,7 @@ export interface CloudApp extends TerraformApp {
 }
 
 export interface VaultService extends CloudService {
-  username(service: string, root: boolean): string;
-  password(service: string): string;
+  credentials(stack: CloudStack, service: string, opts?: VaultCredentialOptions): CredentialsObject;
 }
 
 export interface ProviderService extends CloudService {
@@ -105,8 +107,7 @@ export interface ProviderService extends CloudService {
   prerequisites(stack: CloudStack): void;
 }
 
-export interface StateService extends CloudService {
-}
+export interface StateService extends CloudService {}
 
 export interface SubclassRegistry<T> {
   items: Map<string, T>;

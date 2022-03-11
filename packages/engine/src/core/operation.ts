@@ -1,11 +1,10 @@
 import { Memoize } from 'typescript-memoize';
-import { groupBy } from 'lodash';
+import { pick, uniqBy } from 'lodash';
 
 import Project from '@stackmate/core/project';
 import Provisioner from '@stackmate/core/provisioner';
 import ServicesRegistry from '@stackmate/core/registry';
 import { SERVICE_TYPE } from '@stackmate/constants';
-import { CloudService } from '@stackmate/interfaces';
 
 abstract class Operation {
   /**
@@ -46,24 +45,27 @@ abstract class Operation {
    */
   @Memoize() get services() {
     const { PROVIDER, VAULT } = SERVICE_TYPE;
-    const instances: CloudService[] = [];
-    const { secrets: vault, stages: { [this.stageName]: stage } } = this.project;
-    const stageServices = [{ type: VAULT, ...vault }, ...Object.values(stage)];
+    const { secrets: vaultAttrs, stages: { [this.stageName]: stage } } = this.project;
+    const serviceAtrs = Object.values(stage);
+    const defaults = { projectName: this.project.name, stageName: this.stageName };
 
-    const services = groupBy(stageServices, 'provider');
-    Object.keys(services).map(provider => {
-      const servicesPerRegion = groupBy(services[provider], 'region');
+    const vault = {
+      name: 'project-vault',
+      type: VAULT,
+      ...defaults,
+      ...vaultAttrs,
+    };
 
-      Object.keys(servicesPerRegion).forEach(region => {
-        const services = [{ type: PROVIDER, provider, region }, ...servicesPerRegion[region]];
+    const providers = uniqBy(serviceAtrs.map(srv => pick(srv, 'provider', 'region')), attrs => (
+      Object.keys(attrs).join('-')
+    )).map(({ provider, region }) => ({
+      type: PROVIDER, name: `provider-${provider}-${region}`, provider, region, ...defaults,
+    }));
 
-        instances.push(
-          ...services.map(srv => ServicesRegistry.get({ type: srv.type, provider }).factory(srv)),
-        );
-      });
+    return [vault, ...providers, ...Object.values(stage)].map(srv => {
+      const { type, provider } = srv;
+      return ServicesRegistry.get({ type, provider }).factory({ ...srv, ...defaults });
     });
-
-    return instances;
   }
 
   /**

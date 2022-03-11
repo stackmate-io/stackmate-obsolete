@@ -2,7 +2,6 @@ import fs from 'fs';
 import os from 'os';
 import faker from 'faker';
 import sinon from 'sinon';
-import YAML from 'yaml';
 import { join as joinPaths } from 'path';
 import { Construct } from 'constructs';
 import { Manifest, Testing } from 'cdktf';
@@ -10,11 +9,14 @@ import { Manifest, Testing } from 'cdktf';
 import Project from '@stackmate/core/project';
 import Service from '@stackmate/core/service';
 import Environment from '@stackmate/lib/environment';
+import DeployOperation from '@stackmate/operations/deploy';
+import ServiceRegistry from '@stackmate/core/registry';
 import { CloudStack } from '@stackmate/interfaces';
-import { FactoryOf, ProviderChoice } from '@stackmate/types';
-import { ENVIRONMENT_VARIABLE } from '@stackmate/constants';
+import { FactoryOf, ProviderChoice, ServiceAttributes } from '@stackmate/types';
+import { ENVIRONMENT_VARIABLE, PROVIDER, SERVICE_TYPE } from '@stackmate/constants';
 
 /**
+ * Enhances the terraform stack with the properties we apply in the Stack class
  *
  * @param {TerraformStack} stack the stack to enhance
  * @param {Object} opts
@@ -68,6 +70,62 @@ export const withEphemeralManifest = (
 };
 
 /**
+ * Returns the prerequisites to use for service provisioning
+ *
+ * @param {Object} options
+ * @param {ProviderChoice} options.provider the provider for the prerequisites
+ * @param {String} options.region the rgion for the prerequisites
+ * @returns {Object} the prerequisites for the service registration
+ */
+export const getPrerequisites = (
+  { provider, region, projectName, stageName, stack }: {
+    provider: ProviderChoice,
+    region: string,
+    projectName: string,
+    stageName: string,
+    stack: CloudStack,
+  },
+) => {
+  const cloudProvider = ServiceRegistry.get({ provider, type: SERVICE_TYPE.PROVIDER }).factory({
+    name: `provider-${provider}-default`,
+    provider,
+    region,
+    projectName,
+    stageName,
+  }).scope('deployable');
+
+  const vaultAttrs = {
+    name: `project-vault-${provider}`,
+    provider,
+    region,
+    projectName,
+    stageName,
+  }
+
+  if (provider === PROVIDER.AWS) {
+    const awsAccount = 111122223333;
+    const awsHash = '1234abcd-12ab-34cd-56ef-1234567890ab';
+
+    Object.assign(vaultAttrs, {
+      key: `arn:aws:kms:${region}:${awsAccount}:key/${awsHash}`,
+    });
+  }
+
+  cloudProvider.register(stack);
+
+  const vault = ServiceRegistry.get({
+    provider, type: SERVICE_TYPE.VAULT,
+  }).factory(vaultAttrs).scope('deployable').link(cloudProvider)
+
+  vault.register(stack);
+
+  return {
+    cloudProvider,
+    vault,
+  };
+};
+
+/**
  * Registers a service into the stack and returns the result
  *
  * @param {Object} options
@@ -78,32 +136,35 @@ export const withEphemeralManifest = (
  * @returns {Promise<Object>}
  */
 export const getServiceRegisterationResults = async ({
-  provider, serviceClass, serviceConfig, stackName = 'production',
+  provider, serviceClass, serviceConfig, projectName = 'sample-project', stageName = 'production',
 }: {
   provider: ProviderChoice;
   serviceClass: FactoryOf<Service>;
-  serviceConfig: object;
-  stackName?: string;
+  serviceConfig: Omit<ServiceAttributes, 'provider'>;
+  projectName?: string;
+  stageName?: string;
 }): Promise<{
   scope: string;
   variables: object;
   [name: string]: any;
 }> => {
-  let prerequisitesGenerator = ({ stack }: { stack: CloudStack }) => ({});
-
   const synthesize = (): Promise<{ [name: string]: any }> => {
     let scope: string;
 
+    const { region } = serviceConfig;
     const synth = (): Promise<{ [name: string]: any }> => (
       new Promise((resolve) => {
         scope = Testing.synthScope((stack) => {
-          const cloudStack = enhanceStack(stack, { name: stackName });
+          const cloudStack = enhanceStack(stack, { name: stageName });
+          const { cloudProvider, vault } = getPrerequisites({
+            provider, region, projectName, stageName, stack: cloudStack,
+          });
 
-          const service = serviceClass.factory(
-            serviceConfig, cloudStack, prerequisitesGenerator({ stack: cloudStack }),
+          const service = serviceClass.factory(serviceConfig).scope('deployable').link(
+            cloudProvider, vault,
           );
 
-          service.provision(cloudStack);
+          service.register(cloudStack);
 
           const { variable: variables, ...terraform } = cloudStack.toTerraform();
 
@@ -131,34 +192,19 @@ export const getServiceRegisterationResults = async ({
  * @param {Object} secrets the service's secrets to be used
  * @returns {Object} the scope as string and stack as object
  */
-export const synthesizeProject = async (
+export const deployProject = async (
   projectConfig: object,
-  secrets: object = {},
   stageName: string = 'production',
+  secrets: object = {},
 ): Promise<{ scope: string, stack: CloudStack, output: string }> => {
   // Set the app's output path to the temp directory
   sinon.stub(Environment, 'get').withArgs(ENVIRONMENT_VARIABLE.OUTPUT_DIR).returns(os.tmpdir());
+  const project = Project.factory(projectConfig);
 
-  const inputPath = joinPaths(os.tmpdir(), 'input-files', '.stackmate', 'config.yml');
+  const operation = new DeployOperation(project, stageName);
+  await operation.run();
 
-  // Stub the readFile that is used in projet file loading, to return the project config we set
-  const readStub = sinon.stub(fs.promises, 'readFile');
-  readStub.withArgs(inputPath).resolves(YAML.stringify(projectConfig));
-  (fs.promises.readFile as sinon.SinonStub).callThrough();
-
-  // Same for the existsSync call
-  const existsStub = sinon.stub(fs, 'existsSync');
-  existsStub.withArgs(inputPath).returns(true);
-  (fs.existsSync as sinon.SinonStub).callThrough();
-
-  const project = await Project.load(inputPath);
-  project.select(stageName).prepare();
-
-  // Restore the stubs
-  readStub.restore();
-  existsStub.restore();
-
-  const { stack } = project.stage;
+  const { provisioner: { stack } } = operation;
 
   return {
     stack,
