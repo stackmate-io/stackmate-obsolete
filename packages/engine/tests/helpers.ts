@@ -10,10 +10,11 @@ import Project from '@stackmate/core/project';
 import Service from '@stackmate/core/service';
 import Environment from '@stackmate/lib/environment';
 import DeployOperation from '@stackmate/operations/deploy';
-import ServiceRegistry from '@stackmate/core/registry';
 import { CloudStack } from '@stackmate/interfaces';
-import { FactoryOf, ProviderChoice, ServiceAttributes } from '@stackmate/types';
-import { ENVIRONMENT_VARIABLE, PROVIDER, SERVICE_TYPE } from '@stackmate/constants';
+import { getMockService } from 'tests/mocks';
+import { ENVIRONMENT_VARIABLE } from '@stackmate/constants';
+import { awsProviderConfiguration, awsVaultConfiguration } from 'tests/fixtures/aws';
+import { FactoryOf, ProviderChoice, ServiceAttributes, ServiceScopeChoice } from '@stackmate/types';
 
 /**
  * Enhances the terraform stack with the properties we apply in the Stack class
@@ -78,45 +79,19 @@ export const withEphemeralManifest = (
  * @returns {Object} the prerequisites for the service registration
  */
 export const getPrerequisites = (
-  { provider, region, projectName, stageName, stack }: {
+  { provider, region, projectName, stageName, stack, scope }: {
     provider: ProviderChoice,
     region: string,
     projectName: string,
     stageName: string,
     stack: CloudStack,
+    scope: ServiceScopeChoice,
   },
 ) => {
-  const cloudProvider = ServiceRegistry.get({ provider, type: SERVICE_TYPE.PROVIDER }).factory({
-    name: `provider-${provider}-default`,
-    provider,
-    region,
-    projectName,
-    stageName,
-  }).scope('deployable');
-
-  const vaultAttrs = {
-    name: `project-vault-${provider}`,
-    provider,
-    region,
-    projectName,
-    stageName,
-  }
-
-  if (provider === PROVIDER.AWS) {
-    const awsAccount = 111122223333;
-    const awsHash = '1234abcd-12ab-34cd-56ef-1234567890ab';
-
-    Object.assign(vaultAttrs, {
-      key: `arn:aws:kms:${region}:${awsAccount}:key/${awsHash}`,
-    });
-  }
-
+  const cloudProvider = getMockService(awsProviderConfiguration);
   cloudProvider.register(stack);
 
-  const vault = ServiceRegistry.get({
-    provider, type: SERVICE_TYPE.VAULT,
-  }).factory(vaultAttrs).scope('deployable').link(cloudProvider)
-
+  const vault = getMockService(awsVaultConfiguration).link(cloudProvider);
   vault.register(stack);
 
   return {
@@ -136,13 +111,21 @@ export const getPrerequisites = (
  * @returns {Promise<Object>}
  */
 export const getServiceRegisterationResults = async ({
-  provider, serviceClass, serviceConfig, projectName = 'sample-project', stageName = 'production',
+  provider,
+  serviceClass,
+  serviceConfig,
+  projectName = 'sample-project',
+  stageName = 'production',
+  serviceScope = 'deployable',
+  prerequisitesScope = 'deployable',
 }: {
   provider: ProviderChoice;
   serviceClass: FactoryOf<Service>;
   serviceConfig: Omit<ServiceAttributes, 'provider'>;
   projectName?: string;
   stageName?: string;
+  serviceScope?: ServiceScopeChoice,
+  prerequisitesScope?: ServiceScopeChoice,
 }): Promise<{
   scope: string;
   variables: object;
@@ -157,10 +140,10 @@ export const getServiceRegisterationResults = async ({
         scope = Testing.synthScope((stack) => {
           const cloudStack = enhanceStack(stack, { name: stageName });
           const { cloudProvider, vault } = getPrerequisites({
-            provider, region, projectName, stageName, stack: cloudStack,
+            provider, region, projectName, stageName, stack: cloudStack, scope: prerequisitesScope,
           });
 
-          const service = serviceClass.factory(serviceConfig).scope('deployable').link(
+          const service = serviceClass.factory(serviceConfig).scope(serviceScope).link(
             cloudProvider, vault,
           );
 

@@ -9,7 +9,7 @@ import { getStoragAdaptereByType } from '@stackmate/core/storage';
 import { PROVIDER, STORAGE, FORMAT } from '@stackmate/constants';
 import {
   ProjectConfiguration, NormalizedProjectConfiguration, ProjectDefaults, Validations,
-  AttributeParsers, VaultConfiguration, ProviderChoice, StagesNormalizedAttributes,
+  AttributeParsers, VaultConfiguration, ProviderChoice, StagesNormalizedAttributes, StateConfiguration,
 } from '@stackmate/types';
 
 class Project extends Entity {
@@ -29,9 +29,14 @@ class Project extends Entity {
   @Attribute region: string;
 
   /**
-   * @var {Object} vault the valult configuration
+   * @var {VaultConfiguration} secrets the vault configuration
    */
   @Attribute secrets: VaultConfiguration = {};
+
+  /**
+   * @var {StateConfiguration} state the state configuration
+   */
+  @Attribute state: StateConfiguration = {};
 
   /**
    * @var {Object} stages the stages declarations
@@ -104,6 +109,9 @@ class Project extends Entity {
       stages: {
         validateStages: {},
       },
+      state: {
+        validateState: {},
+      },
       defaults: {
         validateProjectDefaults: {},
       },
@@ -119,6 +127,7 @@ class Project extends Entity {
       region: Parser.parseString,
       provider: Parser.parseString,
       secrets: Parser.parseObject,
+      state: Parser.parseObject,
       stages: Parser.parseObject,
       defaults: Parser.parseObject,
     };

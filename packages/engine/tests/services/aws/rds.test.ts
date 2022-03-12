@@ -5,7 +5,7 @@ import { DbInstance, DbParameterGroup } from '@cdktf/provider-aws/lib/rds';
 import Profile from '@stackmate/core/profile';
 import { PROVIDER, SERVICE_TYPE } from '@stackmate/constants';
 import { getServiceRegisterationResults } from 'tests/helpers';
-import { mysqlDatabaseConfiguration as serviceConfig, stageName, projectName } from 'tests/fixtures';
+import { mysqlDatabaseConfiguration as serviceConfig } from 'tests/fixtures/aws';
 import { Database as AwsRdsService } from '@stackmate/providers/aws';
 import { SecretsmanagerSecret, SecretsmanagerSecretVersion } from '@cdktf/provider-aws/lib/secretsmanager';
 
@@ -14,7 +14,7 @@ describe('AwsRdsService', () => {
     let service: AwsRdsService;
 
     it('instantiates the service and assigns the attributes correctly', () => {
-      const { name, region, size, storage, engine, database } = serviceConfig;
+      const { name, region, size, storage, engine, database, stageName } = serviceConfig;
 
       service = AwsRdsService.factory(serviceConfig);
 
@@ -45,6 +45,7 @@ describe('AwsRdsService', () => {
   describe('register', () => {
     it('registers a single-node RDS instance with the default profile', async () => {
       const { AWS: provider } = PROVIDER;
+      const { stageName, projectName } = serviceConfig;
       const providerAlias = `${provider}.${provider}_${snakeCase(serviceConfig.region)}`;
       const { scope } = await getServiceRegisterationResults({
         provider,
@@ -98,6 +99,9 @@ describe('AwsRdsService', () => {
         username: `\${lookup(jsondecode(data.aws_secretsmanager_secret_version.${snakeCase(serviceConfig.name)}_secrets_data.secret_string), "username", "")}`,
         password: `\${lookup(jsondecode(data.aws_secretsmanager_secret_version.${snakeCase(serviceConfig.name)}_secrets_data.secret_string), "password", "")}`,
         enabled_cloudwatch_logs_exports: ['audit', 'error', 'general', 'slowquery'],
+        lifecycle: {
+          create_before_destroy: true,
+        },
       });
     });
   });

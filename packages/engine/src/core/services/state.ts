@@ -2,17 +2,18 @@ import Service from '@stackmate/core/service';
 import { ServiceTypeChoice } from '@stackmate/types';
 import { SERVICE_TYPE } from '@stackmate/constants';
 import { CloudStack, StateService } from '@stackmate/interfaces';
+import { Attribute } from '@stackmate/lib/decorators';
 
 abstract class State extends Service implements StateService {
+  /**
+   * @var {String} name the service's name
+   */
+  @Attribute name: string = 'stage-state';
+
   /**
    * @var {ServiceTypeChoice} type the service's type
    */
   type: ServiceTypeChoice = SERVICE_TYPE.STATE;
-
-  /**
-   * @var {Boolean} isAuthenticatable the service should not use authentication
-   */
-  readonly isAuthenticatable: boolean = false;
 
   /**
    * Provisions the state storage itself
@@ -26,7 +27,7 @@ abstract class State extends Service implements StateService {
    *
    * @param {CloudStack} stack the stack to deploy the resources to
    */
-  abstract data(stack: CloudStack): void;
+  abstract backend(stack: CloudStack): void;
 
   /**
    * Provisioning when we initially prepare a stage
@@ -45,7 +46,7 @@ abstract class State extends Service implements StateService {
    * @void
    */
   onDeploy(stack: CloudStack): void {
-    this.data(stack);
+    this.backend(stack);
   }
 
   /**
@@ -56,7 +57,7 @@ abstract class State extends Service implements StateService {
    */
   onDestroy(stack: CloudStack): void {
     // The state has to be present when destroying resources
-    this.data(stack);
+    this.backend(stack);
   }
 }
 
