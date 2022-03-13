@@ -10,5 +10,8 @@
   "scripts": {
     "build": "npm run compile -ws",
     "release": "npm publish --workspaces --access public"
+  },
+  "directories": {
+    "example": "examples"
   }
 }
