@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import Entity from '@stackmate/lib/entity';
+import Entity from 'engine/lib/entity';
 
 export const Attribute = function Attribute(target: Entity, propertyKey: string) {
   if (!(target instanceof Entity)) {

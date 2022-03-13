@@ -1,8 +1,8 @@
-import App from '@stackmate/lib/terraform/app';
-import PriorityQueue from '@stackmate/lib/queue';
-import { CloudApp, CloudService, CloudStack } from '@stackmate/interfaces';
-import { SERVICE_TYPE } from '@stackmate/constants';
-import { ServiceTypeChoice } from '@stackmate/types';
+import App from 'engine/lib/terraform/app';
+import PriorityQueue from 'engine/lib/queue';
+import { CloudApp, CloudService, CloudStack } from 'engine/interfaces';
+import { SERVICE_TYPE } from 'engine/constants';
+import { ServiceTypeChoice } from 'engine/types';
 
 class Provisioner {
   /**

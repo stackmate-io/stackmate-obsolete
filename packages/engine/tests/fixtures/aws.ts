@@ -1,8 +1,8 @@
 import faker from 'faker';
 
-import { ProjectConfiguration } from '@stackmate/types';
-import { PROVIDER, SERVICE_TYPE } from '@stackmate/constants';
-import { AWS_REGIONS, RDS_INSTANCE_SIZES } from '@stackmate/providers/aws/constants';
+import { ProjectConfiguration } from 'engine/types';
+import { PROVIDER, SERVICE_TYPE } from 'engine/constants';
+import { AWS_REGIONS, RDS_INSTANCE_SIZES } from 'engine/providers/aws/constants';
 import { projectName, stageName } from 'tests/fixtures/generic';
 
 export const awsRegion = faker.random.arrayElement(Object.values(AWS_REGIONS)) as string;

@@ -1,10 +1,10 @@
 import { Memoize } from 'typescript-memoize';
 import { App as TerraformApp, AppOptions } from 'cdktf';
 
-import Stack from '@stackmate/lib/terraform/stack';
-import Environment from '@stackmate/lib//environment';
-import { DEBUG_MODE, DEFAULT_OUTPUT_PATH, ENVIRONMENT_VARIABLE } from '@stackmate/constants';
-import { CloudApp, CloudStack } from '@stackmate/interfaces';
+import Stack from 'engine/lib/terraform/stack';
+import Environment from 'engine/lib//environment';
+import { DEBUG_MODE, DEFAULT_OUTPUT_PATH, ENVIRONMENT_VARIABLE } from 'engine/constants';
+import { CloudApp, CloudStack } from 'engine/interfaces';
 
 class App extends TerraformApp implements CloudApp {
   /**

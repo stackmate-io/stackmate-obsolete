@@ -2,11 +2,11 @@ import 'cdktf/lib/testing/adapters/jest';
 import { S3Bucket } from '@cdktf/provider-aws/lib/s3';
 import { snakeCase } from 'lodash';
 
-import Profile from '@stackmate/core/profile';
-import { PROVIDER, SERVICE_TYPE } from '@stackmate/constants';
+import Profile from 'engine/core/profile';
+import { PROVIDER, SERVICE_TYPE } from 'engine/constants';
 import { getServiceRegisterationResults } from 'tests/helpers';
 import { stateConfiguration as serviceConfig } from 'tests/fixtures/aws';
-import { State as AwsS3State } from '@stackmate/providers/aws';
+import { State as AwsS3State } from 'engine/providers/aws';
 
 describe('AwsS3State', () => {
   describe('instantiation', () => {

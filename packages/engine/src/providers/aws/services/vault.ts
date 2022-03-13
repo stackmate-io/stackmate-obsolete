@@ -6,11 +6,11 @@ import {
   SecretsmanagerSecretVersion,
 } from '@cdktf/provider-aws/lib/secretsmanager';
 
-import Vault from '@stackmate/core/services/vault';
-import AwsService from '@stackmate/providers/aws/mixins';
-import { CloudStack } from '@stackmate/interfaces';
-import { VaultCredentialOptions } from '@stackmate/types';
-import { getRandomString } from '@stackmate/lib/helpers';
+import Vault from 'engine/core/services/vault';
+import AwsService from 'engine/providers/aws/mixins';
+import { CloudStack } from 'engine/interfaces';
+import { VaultCredentialOptions } from 'engine/types';
+import { getRandomString } from 'engine/lib/helpers';
 
 const AwsVaultService = AwsService(Vault);
 

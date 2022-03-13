@@ -1,37 +1,28 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "ES2018",
-    "module": "amd",
-    "lib": ["es5", "es6" ],
-    "jsx": "react",
-    "declaration": true,
-    "outDir": "./dist",
-    "outFile": "./dist/index.js",
-    "rootDir": "./",
-    "rootDirs": ["./src", "./profiles", "./tests"],
-    "composite": true,
-    "importHelpers": true,
-    "strict": true,
-    "strictPropertyInitialization": false,
-    "noUnusedLocals": true,
-    "moduleResolution": "node",
+    "outDir": "./dist/",
     "baseUrl": "./",
+    "rootDirs": [
+      "./src",
+      "./profiles",
+      "./tests"
+    ],
     "paths": {
-      "@stackmate/*": ["./src/*"],
-      "tests/*": ["./tests/*"],
-      "profiles/*": ["./profiles/*"],
-    },
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+      "engine/*": [
+        "./src/*"
+      ],
+      "tests/*": [
+        "./tests/*"
+      ],
+      "profiles/*": [
+        "./profiles/*"
+      ]
+    }
   },
   "include": [
-    "src/**/*",
-    "profiles/**/*",
-    "tests/**/*"
-  ],
-  "exclude": [
-    "node_modules"
+    "./src/**/*",
+    "./profiles/**/*",
+    "./tests/**/*"
   ]
 }

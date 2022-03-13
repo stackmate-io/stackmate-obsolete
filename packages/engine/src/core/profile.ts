@@ -2,8 +2,8 @@ import { Memoize } from 'typescript-memoize';
 import { existsSync as fileExistsSync } from 'fs';
 import { join as joinPaths, resolve as resolvePath } from 'path';
 
-import { ProviderChoice, ServiceTypeChoice } from '@stackmate/types';
-import { ProfileNotFoundError } from '@stackmate/lib/errors';
+import { ProfileNotFoundError } from 'engine/lib/errors';
+import { ProviderChoice, ServiceTypeChoice } from 'engine/types';
 
 class Profile {
   /**

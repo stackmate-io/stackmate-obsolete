@@ -1,10 +1,10 @@
 import { snakeCase } from 'lodash';
 import { TerraformProvider } from 'cdktf';
 
-import Service from '@stackmate/core/service';
-import { SERVICE_TYPE } from '@stackmate/constants';
-import { ServiceTypeChoice } from '@stackmate/types';
-import { CloudStack, ProviderService } from '@stackmate/interfaces';
+import Service from 'engine/core/service';
+import { SERVICE_TYPE } from 'engine/constants';
+import { ServiceTypeChoice } from 'engine/types';
+import { CloudStack, ProviderService } from 'engine/interfaces';
 
 abstract class Provider extends Service implements ProviderService {
   /**

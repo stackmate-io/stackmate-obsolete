@@ -1,15 +1,18 @@
 {
-  "name": "stackmate",
-  "version": "0.0.0",
+  "name": "@stackmate/stackmate",
+  "version": "0.1.0",
   "description": "Stackmate - launch and deploy cloud infrastructure using 1-line commands",
   "author": "Fotis Alexandrou @falexandrou",
   "bin": {
-    "stackmate": "./bin/run"
+    "stackmate": "bin/run"
   },
   "homepage": "https://github.com/stackmate-io/cli",
   "license": "MIT",
   "main": "dist/index.js",
-  "repository": "stackmate-io/cli",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stackmate-io/cli.git"
+  },
   "files": [
     "/bin",
     "/dist",
@@ -68,9 +71,14 @@
   "engines": {
     "node": ">=12.0.0"
   },
-  "bugs": "https://github.com/stackmate-io/cli/issues",
+  "bugs": {
+    "url": "https://github.com/stackmate-io/cli/issues"
+  },
   "keywords": [
     "oclif"
   ],
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "directories": {
+    "test": "tests"
+  }
 }

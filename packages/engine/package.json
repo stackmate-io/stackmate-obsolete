@@ -3,12 +3,9 @@
   "version": "0.1.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/stackmate-io/engine"
+    "url": "git+https://github.com/stackmate-io/engine.git"
   },
-  "author": {
-    "name": "Fotis Alexandrou (@falexandrou)",
-    "url": "https://www.falexandrou.com"
-  },
+  "author": "Fotis Alexandrou (@falexandrou)",
   "bugs": {
     "url": "https://github.com/stackmate-io/engine/issues"
   },
@@ -74,11 +71,12 @@
     "files": false
   },
   "scripts": {
-    "lint": "eslint . --ext .ts --config .eslintrc",
-    "build": "rm -rf dist && tsc --build tsconfig.build.json",
-    "test": "rm -rf tests/output/* && jest --bail --verbose --detectOpenHandles --watchAll",
-    "test:ci": "npm run lint && npm run test",
-    "test:all": "npm run test tests/**/*.test.ts"
+    "compile": "rm -rf dist/* && tsc -p tsconfig.pkg.json"
   },
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "description": "stackmate",
+  "directories": {
+    "example": "examples",
+    "test": "tests"
+  }
 }

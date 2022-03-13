@@ -1,8 +1,8 @@
-import Service from '@stackmate/core/service';
-import { CloudStack, VaultService } from '@stackmate/interfaces';
-import { SERVICE_TYPE } from '@stackmate/constants';
-import { CredentialsObject, ServiceTypeChoice, VaultCredentialOptions } from '@stackmate/types';
-import { Attribute } from '@stackmate/lib/decorators';
+import Service from 'engine/core/service';
+import { CloudStack, VaultService } from 'engine/interfaces';
+import { SERVICE_TYPE } from 'engine/constants';
+import { CredentialsObject, ServiceTypeChoice, VaultCredentialOptions } from 'engine/types';
+import { Attribute } from 'engine/lib/decorators';
 
 abstract class Vault extends Service implements VaultService {
   /**

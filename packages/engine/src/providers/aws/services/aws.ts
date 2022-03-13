@@ -2,14 +2,14 @@ import { InternetGateway, Subnet, Vpc } from '@cdktf/provider-aws/lib/vpc';
 import { AwsProvider as TerraformAwsProvider } from '@cdktf/provider-aws';
 import { KmsKey } from '@cdktf/provider-aws/lib/kms';
 
-import Parser from '@stackmate/lib/parsers';
-import Provider from '@stackmate/core/services/provider';
-import { CloudStack } from '@stackmate/interfaces';
-import { AWS_REGIONS } from '@stackmate/providers/aws/constants';
-import { Attribute } from '@stackmate/lib/decorators';
-import { DEFAULT_IP, DEFAULT_RESOURCE_COMMENT, PROVIDER } from '@stackmate/constants';
-import { ProviderChoice, RegionList } from '@stackmate/types';
-import { getNetworkingCidrBlocks } from '@stackmate/lib/helpers';
+import Parser from 'engine/lib/parsers';
+import Provider from 'engine/core/services/provider';
+import { CloudStack } from 'engine/interfaces';
+import { AWS_REGIONS } from 'engine/providers/aws/constants';
+import { Attribute } from 'engine/lib/decorators';
+import { DEFAULT_IP, DEFAULT_RESOURCE_COMMENT, PROVIDER } from 'engine/constants';
+import { ProviderChoice, RegionList } from 'engine/types';
+import { getNetworkingCidrBlocks } from 'engine/lib/helpers';
 
 class AwsProvider extends Provider {
   /**

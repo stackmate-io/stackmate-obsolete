@@ -1,16 +1,16 @@
 import { Memoize } from 'typescript-memoize';
 import { isEmpty, isObject, merge } from 'lodash';
 
-import Entity from '@stackmate/lib/entity';
-import Parser from '@stackmate/lib/parsers';
-import Profile from '@stackmate/core/profile';
-import { Attribute } from '@stackmate/lib/decorators';
-import { SERVICE_TYPE } from '@stackmate/constants';
-import { CloudService, CloudStack, ProviderService, VaultService } from '@stackmate/interfaces';
+import Entity from 'engine/lib/entity';
+import Parser from 'engine/lib/parsers';
+import Profile from 'engine/core/profile';
+import { Attribute } from 'engine/lib/decorators';
+import { SERVICE_TYPE } from 'engine/constants';
+import { CloudService, CloudStack, ProviderService, VaultService } from 'engine/interfaces';
 import {
   RegionList, ServiceAssociation, ProviderChoice,
   ServiceTypeChoice, ResourceProfile, ServiceScopeChoice,
-} from '@stackmate/types';
+} from 'engine/types';
 
 abstract class Service extends Entity implements CloudService {
   /**

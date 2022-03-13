@@ -1,7 +1,14 @@
 {
   "name": "root",
   "private": true,
+  "workspaces": [
+    "./packages/*"
+  ],
   "devDependencies": {
     "lerna": "^4.0.0"
+  },
+  "scripts": {
+    "build": "npm run compile -ws",
+    "release": "npm publish --workspaces --access public"
   }
 }

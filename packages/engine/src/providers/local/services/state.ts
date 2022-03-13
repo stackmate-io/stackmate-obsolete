@@ -1,10 +1,10 @@
 import { LocalBackend } from 'cdktf';
 import { join as joinPaths } from 'path';
 
-import State from '@stackmate/core/services/state';
-import { APP_HOME_DIRECTORY, PROVIDER } from '@stackmate/constants';
-import { CloudStack } from '@stackmate/interfaces';
-import { ProviderChoice } from '@stackmate/types';
+import State from 'engine/core/services/state';
+import { APP_HOME_DIRECTORY, PROVIDER } from 'engine/constants';
+import { CloudStack } from 'engine/interfaces';
+import { ProviderChoice } from 'engine/types';
 
 class LocalState extends State {
   /**

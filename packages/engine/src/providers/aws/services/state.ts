@@ -1,11 +1,11 @@
 import { S3Backend, TerraformResource } from 'cdktf';
 
-import State from '@stackmate/core/services/state';
-import AwsService from '@stackmate/providers/aws/mixins';
-import { CloudStack } from '@stackmate/interfaces';
+import State from 'engine/core/services/state';
+import AwsService from 'engine/providers/aws/mixins';
+import { CloudStack } from 'engine/interfaces';
 import { S3Bucket } from '@cdktf/provider-aws/lib/s3';
-import { Attribute } from '@stackmate/lib/decorators';
-import Parser from '@stackmate/lib/parsers';
+import { Attribute } from 'engine/lib/decorators';
+import Parser from 'engine/lib/parsers';
 
 const AwsStateService = AwsService(State);
 

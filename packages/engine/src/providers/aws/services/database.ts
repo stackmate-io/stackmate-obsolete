@@ -2,17 +2,17 @@ import { isUndefined } from 'lodash';
 import { Memoize } from 'typescript-memoize';
 import { DbInstance, DbParameterGroup } from '@cdktf/provider-aws/lib/rds';
 
-import Database from '@stackmate/core/services/database';
-import AwsService from '@stackmate/providers/aws/mixins';
-import { OneOf } from '@stackmate/types';
-import { CloudStack } from '@stackmate/interfaces';
+import Database from 'engine/core/services/database';
+import AwsService from 'engine/providers/aws/mixins';
+import { OneOf } from 'engine/types';
+import { CloudStack } from 'engine/interfaces';
 import {
   RDS_ENGINES,
   RDS_INSTANCE_SIZES,
   RDS_PARAM_FAMILY_MAPPING,
   RDS_MAJOR_VERSIONS_PER_ENGINE,
   RDS_LOG_EXPORTS_PER_ENGINE,
-} from '@stackmate/providers/aws/constants';
+} from 'engine/providers/aws/constants';
 
 const AwsDatabaseService = AwsService(Database);
 

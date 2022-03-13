@@ -1,4 +1,4 @@
-import { PROVIDER, SERVICE_TYPE } from '@stackmate/constants';
+import { PROVIDER, SERVICE_TYPE } from 'engine/constants';
 import { projectName, stageName } from 'tests/fixtures/generic';
 
 export const stateConfiguration = {

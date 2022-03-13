@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2018",
+    "module": "amd",
+    "lib": ["es5", "es6" ],
+    "jsx": "react",
+    "declaration": true,
+    "outDir": "./dist",
+    "outFile": "./dist/index.js",
+    "rootDir": "./",
+    "composite": true,
+    "importHelpers": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "noUnusedLocals": true,
+    "moduleResolution": "node",
+    "baseUrl": "./",
+    "paths": {
+      "@stackmate/*": [
+        "./packages/*"
+      ]
+    },
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "include": [
+    "./packages/**/*.ts"
+  ]
+}

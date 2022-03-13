@@ -1,9 +1,9 @@
-import Registry from '@stackmate/lib/registry';
-import * as AwsServices from '@stackmate/providers/aws';
-import * as LocalServices from '@stackmate/providers/local';
-import { BaseEntityConstructor, CloudService } from '@stackmate/interfaces';
-import { ProviderChoice, ServiceAttributes, ServiceScopeChoice, ServiceTypeChoice } from '@stackmate/types';
-import { PROVIDER, SERVICE_TYPE } from '@stackmate/constants';
+import Registry from 'engine/lib/registry';
+import * as AwsServices from 'engine/providers/aws';
+import * as LocalServices from 'engine/providers/local';
+import { BaseEntityConstructor, CloudService } from 'engine/interfaces';
+import { ProviderChoice, ServiceAttributes, ServiceScopeChoice, ServiceTypeChoice } from 'engine/types';
+import { PROVIDER, SERVICE_TYPE } from 'engine/constants';
 
 interface ServiceConstructor extends BaseEntityConstructor<CloudService> {}
 
