@@ -10,10 +10,7 @@
   "devDependencies": {
     "lerna": "^4.0.0"
   },
-  "scripts": {
-    "build": "npm run compile -ws",
-    "release": "npm publish --workspaces --access public"
-  },
+  "scripts": {},
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "ts-node": {
