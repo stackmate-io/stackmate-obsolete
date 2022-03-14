@@ -10,7 +10,9 @@
   "devDependencies": {
     "lerna": "^4.0.0"
   },
-  "scripts": {},
+  "scripts": {
+    "dev:upgrade": "lerna exec -- yarn upgrade"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "ts-node": {
