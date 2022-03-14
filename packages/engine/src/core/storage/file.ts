@@ -1,5 +1,6 @@
+import { promises as fsPromises } from 'node:fs';
+
 import YAML from 'yaml';
-import { promises as fsPromises } from 'fs';
 
 import Entity from 'engine/lib/entity';
 import Parser from 'engine/lib/parsers';

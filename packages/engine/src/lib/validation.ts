@@ -1,6 +1,7 @@
 /* eslint-disable consistent-return */
+import { existsSync as fileExistsSync } from 'node:fs';
+
 import validate from 'validate.js';
-import { existsSync as fileExistsSync } from 'fs';
 import { difference, flatten, isArray, isEmpty, isObject, isString, uniq } from 'lodash';
 
 import Profile from 'engine/core/profile';

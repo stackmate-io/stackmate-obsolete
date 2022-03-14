@@ -1,6 +1,7 @@
+import { join as joinPaths, resolve as resolvePath } from 'node:path';
+import { existsSync as fileExistsSync } from 'node:fs';
+
 import { Memoize } from 'typescript-memoize';
-import { existsSync as fileExistsSync } from 'fs';
-import { join as joinPaths, resolve as resolvePath } from 'path';
 
 import { ProfileNotFoundError } from 'engine/lib/errors';
 import { ProviderChoice, ServiceTypeChoice } from 'engine/types';

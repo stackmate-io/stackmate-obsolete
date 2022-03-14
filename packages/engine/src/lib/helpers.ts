@@ -1,4 +1,5 @@
-import fs from 'fs';
+import fs from 'node:fs';
+
 import crypto from 'crypto';
 import { Address4 } from 'ip-address';
 import { isObject, sampleSize } from 'lodash';

@@ -1,8 +1,9 @@
-import fs from 'fs';
-import os from 'os';
+import fs from 'node:fs';
+import os from 'node:os';
+import { join as joinPaths } from 'node:path';
+
 import faker from 'faker';
 import sinon from 'sinon';
-import { join as joinPaths } from 'path';
 import { Construct } from 'constructs';
 import { Manifest, Testing } from 'cdktf';
 
