@@ -22,7 +22,6 @@
   },
   "include": [
     "./index.ts",
-    "./types.ts",
     "./src/**/*",
     "./profiles/**/*",
     "./tests/**/*"
