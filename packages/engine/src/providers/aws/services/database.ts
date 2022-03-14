@@ -4,8 +4,7 @@ import { DbInstance, DbParameterGroup } from '@cdktf/provider-aws/lib/rds';
 
 import Database from 'engine/core/services/database';
 import AwsService from 'engine/providers/aws/mixins';
-import { OneOf } from 'engine/types';
-import { CloudStack } from 'engine/interfaces';
+import { OneOf, CloudStack } from 'engine/types';
 import {
   RDS_ENGINES,
   RDS_INSTANCE_SIZES,

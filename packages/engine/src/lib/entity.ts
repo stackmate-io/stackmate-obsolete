@@ -1,8 +1,7 @@
 import { isEmpty, isFunction, pick, uniq } from 'lodash';
 
 import { validate } from 'engine/lib/validation';
-import { BaseEntity } from 'engine/interfaces';
-import { AttributeParsers, ConstructorOf, EntityAttributes, Validations } from 'engine/types';
+import { BaseEntity, AttributeParsers, ConstructorOf, EntityAttributes, Validations } from 'engine/types';
 import { ValidationError } from 'engine/lib/errors';
 
 abstract class Entity implements BaseEntity {

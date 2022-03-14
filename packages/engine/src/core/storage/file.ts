@@ -3,10 +3,9 @@ import { promises as fsPromises } from 'fs';
 
 import Entity from 'engine/lib/entity';
 import Parser from 'engine/lib/parsers';
-import { AttributeParsers, Validations } from 'engine/types';
-import { StorageAdapter } from 'engine/interfaces';
 import { Attribute } from 'engine/lib/decorators';
 import { FORMAT } from 'engine/constants';
+import { AttributeParsers, Validations, StorageAdapter } from 'engine/types';
 
 class FileStorage extends Entity implements StorageAdapter {
   /**

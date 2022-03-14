@@ -1,4 +1,4 @@
-import { BaseEntity, BaseEntityConstructor, SubclassRegistry } from 'engine/interfaces';
+import { BaseEntity, BaseEntityConstructor, SubclassRegistry } from 'engine/types';
 
 class Registry<T extends BaseEntityConstructor<BaseEntity>> implements SubclassRegistry<T> {
   /**

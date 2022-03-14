@@ -71,7 +71,12 @@
     "files": false
   },
   "scripts": {
-    "compile": "rm -rf dist/* && tsc -p tsconfig.pkg.json"
+    "compile": "rm -rf dist/* && tsc -p tsconfig.json",
+    "lint": "eslint . --ext .ts --config .eslintrc",
+    "build": "rm -rf dist && tsc --build tsconfig.build.json",
+    "test": "rm -rf tests/output/* && jest --bail --verbose --detectOpenHandles --watchAll",
+    "test:ci": "npm run lint && npm run test",
+    "test:all": "npm run test tests/**/*.test.ts"
   },
   "types": "dist/index.d.ts",
   "description": "stackmate",

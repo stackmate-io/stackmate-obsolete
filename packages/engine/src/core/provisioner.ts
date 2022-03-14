@@ -1,10 +1,9 @@
 import App from 'engine/lib/terraform/app';
 import PriorityQueue from 'engine/lib/queue';
-import { CloudApp, CloudService, CloudStack } from 'engine/interfaces';
 import { SERVICE_TYPE } from 'engine/constants';
-import { ServiceTypeChoice } from 'engine/types';
+import { ServiceTypeChoice, CloudApp, CloudService, CloudStack, Provisionable, Queueable } from 'engine/types';
 
-class Provisioner {
+class Provisioner implements Provisionable {
   /**
    * @var {CloudApp} app the terraform application to deploy
    */
@@ -18,7 +17,7 @@ class Provisioner {
   /**
    * @var {PriorityQueue<CloudService>} queue the sorted priority queue that holds the services
    */
-  readonly queue: PriorityQueue<CloudService> = new PriorityQueue();
+  readonly queue: Queueable<CloudService> = new PriorityQueue();
 
   /**
    * @var {Map} dependables a mapping of service identifier to the services that are depended

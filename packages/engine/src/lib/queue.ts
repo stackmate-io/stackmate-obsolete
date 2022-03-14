@@ -1,4 +1,6 @@
-class MaxPriorityQueue<T> {
+import { Queueable } from 'engine/types';
+
+class MaxPriorityQueue<T> implements Queueable<T> {
   /**
    * @var {Array} items the items in the priority queue
    */

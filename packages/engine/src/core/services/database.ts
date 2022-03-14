@@ -2,8 +2,7 @@ import Service from 'engine/core/service';
 import Parser from 'engine/lib/parsers';
 import { Attribute } from 'engine/lib/decorators';
 import { SERVICE_TYPE } from 'engine/constants';
-import { OneOf, ServiceTypeChoice } from 'engine/types';
-import { Sizeable, Storable, MultiNode, Versioned } from 'engine/interfaces';
+import { OneOf, ServiceTypeChoice, Sizeable, Storable, MultiNode, Versioned } from 'engine/types';
 
 abstract class Database extends Service implements Sizeable, Storable, MultiNode, Versioned {
   /**

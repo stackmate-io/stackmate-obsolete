@@ -4,11 +4,10 @@ import { KmsKey } from '@cdktf/provider-aws/lib/kms';
 
 import Parser from 'engine/lib/parsers';
 import Provider from 'engine/core/services/provider';
-import { CloudStack } from 'engine/interfaces';
 import { AWS_REGIONS } from 'engine/providers/aws/constants';
 import { Attribute } from 'engine/lib/decorators';
 import { DEFAULT_IP, DEFAULT_RESOURCE_COMMENT, PROVIDER } from 'engine/constants';
-import { ProviderChoice, RegionList } from 'engine/types';
+import { CloudStack, ProviderChoice, RegionList } from 'engine/types';
 import { getNetworkingCidrBlocks } from 'engine/lib/helpers';
 
 class AwsProvider extends Provider {

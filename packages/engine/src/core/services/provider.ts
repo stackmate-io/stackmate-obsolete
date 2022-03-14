@@ -3,8 +3,7 @@ import { TerraformProvider } from 'cdktf';
 
 import Service from 'engine/core/service';
 import { SERVICE_TYPE } from 'engine/constants';
-import { ServiceTypeChoice } from 'engine/types';
-import { CloudStack, ProviderService } from 'engine/interfaces';
+import { ServiceTypeChoice, CloudStack, ProviderService } from 'engine/types';
 
 abstract class Provider extends Service implements ProviderService {
   /**

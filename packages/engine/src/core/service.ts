@@ -6,8 +6,8 @@ import Parser from 'engine/lib/parsers';
 import Profile from 'engine/core/profile';
 import { Attribute } from 'engine/lib/decorators';
 import { SERVICE_TYPE } from 'engine/constants';
-import { CloudService, CloudStack, ProviderService, VaultService } from 'engine/interfaces';
 import {
+  CloudService, CloudStack, ProviderService, VaultService,
   RegionList, ServiceAssociation, ProviderChoice,
   ServiceTypeChoice, ResourceProfile, ServiceScopeChoice,
 } from 'engine/types';

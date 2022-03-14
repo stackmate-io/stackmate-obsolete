@@ -2,7 +2,7 @@ import { S3Backend, TerraformResource } from 'cdktf';
 
 import State from 'engine/core/services/state';
 import AwsService from 'engine/providers/aws/mixins';
-import { CloudStack } from 'engine/interfaces';
+import { CloudStack } from 'engine/types';
 import { S3Bucket } from '@cdktf/provider-aws/lib/s3';
 import { Attribute } from 'engine/lib/decorators';
 import Parser from 'engine/lib/parsers';

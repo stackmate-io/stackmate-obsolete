@@ -19,7 +19,7 @@ class DeployCommand extends Command {
     const { args: { stage } } = await this.parse(DeployCommand);
 
     const projectFile = '';
-    const operation = DeployOperation.factory(projectFile, stage);
+    const operation = await DeployOperation.factory(projectFile, stage);
 
     await operation.run();
   }

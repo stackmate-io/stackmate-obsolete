@@ -5,12 +5,13 @@ import Project from 'engine/core/project';
 import Provisioner from 'engine/core/provisioner';
 import ServicesRegistry from 'engine/core/registry';
 import { SERVICE_TYPE } from 'engine/constants';
+import { Operatable, Provisionable } from 'engine/types';
 
-abstract class Operation {
+abstract class Operation implements Operatable {
   /**
    * @var {Provisioner} provisioner the stack handler & provisioner
    */
-  readonly provisioner: Provisioner;
+  readonly provisioner: Provisionable;
 
   /**
    * @var {Project} project the project to deploy
@@ -26,6 +27,11 @@ abstract class Operation {
    * @var {Object} options any additional options for the operation
    */
   protected readonly options: object = {};
+
+  /**
+   * Runs the operation
+   */
+  abstract run(): void;
 
   /**
    * @constructor

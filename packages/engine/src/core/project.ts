@@ -4,11 +4,10 @@ import Entity from 'engine/lib/entity';
 import Parser from 'engine/lib/parsers';
 import { Attribute } from 'engine/lib/decorators';
 import { normalizeProject } from 'engine/lib/normalizers';
-import { StorageAdapter } from 'engine/interfaces';
 import { getStoragAdaptereByType } from 'engine/core/storage';
 import { PROVIDER, STORAGE, FORMAT } from 'engine/constants';
 import {
-  ProjectConfiguration, NormalizedProjectConfiguration, ProjectDefaults, Validations,
+  ProjectConfiguration, NormalizedProjectConfiguration, ProjectDefaults, Validations, StorageAdapter,
   AttributeParsers, VaultConfiguration, ProviderChoice, StagesNormalizedAttributes, StateConfiguration,
 } from 'engine/types';
 

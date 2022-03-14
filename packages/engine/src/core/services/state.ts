@@ -1,7 +1,6 @@
 import Service from 'engine/core/service';
-import { ServiceTypeChoice } from 'engine/types';
 import { SERVICE_TYPE } from 'engine/constants';
-import { CloudStack, StateService } from 'engine/interfaces';
+import { ServiceTypeChoice, CloudStack, StateService } from 'engine/types';
 import { Attribute } from 'engine/lib/decorators';
 
 abstract class State extends Service implements StateService {

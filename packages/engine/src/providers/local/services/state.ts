@@ -3,8 +3,7 @@ import { join as joinPaths } from 'path';
 
 import State from 'engine/core/services/state';
 import { APP_HOME_DIRECTORY, PROVIDER } from 'engine/constants';
-import { CloudStack } from 'engine/interfaces';
-import { ProviderChoice } from 'engine/types';
+import { CloudStack, ProviderChoice } from 'engine/types';
 
 class LocalState extends State {
   /**

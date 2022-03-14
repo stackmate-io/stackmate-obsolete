@@ -1,9 +1,8 @@
 import Registry from 'engine/lib/registry';
 import * as AwsServices from 'engine/providers/aws';
 import * as LocalServices from 'engine/providers/local';
-import { BaseEntityConstructor, CloudService } from 'engine/interfaces';
-import { ProviderChoice, ServiceAttributes, ServiceScopeChoice, ServiceTypeChoice } from 'engine/types';
 import { PROVIDER, SERVICE_TYPE } from 'engine/constants';
+import { BaseEntityConstructor, CloudService, ProviderChoice, ServiceAttributes, ServiceScopeChoice, ServiceTypeChoice } from 'engine/types';
 
 interface ServiceConstructor extends BaseEntityConstructor<CloudService> {}
 

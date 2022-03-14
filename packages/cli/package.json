@@ -1,5 +1,5 @@
 {
-  "name": "@stackmate/stackmate",
+  "name": "@stackmate/cli",
   "version": "0.1.0",
   "description": "Stackmate - launch and deploy cloud infrastructure using 1-line commands",
   "author": "Fotis Alexandrou @falexandrou",
@@ -23,6 +23,7 @@
     "@oclif/core": "^1",
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^2.0.1",
+    "@stackmate/engine": "^0.1.0",
     "ffi-napi": "^4.0.3"
   },
   "devDependencies": {

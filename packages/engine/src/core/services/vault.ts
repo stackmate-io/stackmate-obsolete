@@ -1,8 +1,7 @@
 import Service from 'engine/core/service';
-import { CloudStack, VaultService } from 'engine/interfaces';
 import { SERVICE_TYPE } from 'engine/constants';
-import { CredentialsObject, ServiceTypeChoice, VaultCredentialOptions } from 'engine/types';
 import { Attribute } from 'engine/lib/decorators';
+import { CloudStack, VaultService, CredentialsObject, ServiceTypeChoice, VaultCredentialOptions } from 'engine/types';
 
 abstract class Vault extends Service implements VaultService {
   /**

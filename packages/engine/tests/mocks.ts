@@ -3,10 +3,9 @@ import App from 'engine/lib/terraform/app';
 import Stack from 'engine/lib/terraform/stack';
 import Entity from 'engine/lib/entity';
 import Parser from 'engine/lib/parsers';
-import { CloudStack } from 'engine/interfaces';
 import { Attribute } from 'engine/lib/decorators';
 import { stackName, appName } from 'tests/fixtures/generic';
-import { AttributeParsers, Validations } from 'engine/types';
+import { CloudStack, AttributeParsers, Validations } from 'engine/types';
 
 export const getMockApp = (name: string) => (
   new App(name)

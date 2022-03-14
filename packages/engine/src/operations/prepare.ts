@@ -3,7 +3,7 @@ import { Memoize } from 'typescript-memoize';
 
 import Operation from 'engine/core/operation';
 import ServicesRegistry from 'engine/core/registry';
-import { CloudService } from 'engine/interfaces';
+import { CloudService } from 'engine/types';
 import { PROVIDER, SERVICE_TYPE } from 'engine/constants';
 
 class PrepareOperation extends Operation {

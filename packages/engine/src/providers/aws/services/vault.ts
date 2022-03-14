@@ -8,8 +8,7 @@ import {
 
 import Vault from 'engine/core/services/vault';
 import AwsService from 'engine/providers/aws/mixins';
-import { CloudStack } from 'engine/interfaces';
-import { VaultCredentialOptions } from 'engine/types';
+import { CloudStack, VaultCredentialOptions } from 'engine/types';
 import { getRandomString } from 'engine/lib/helpers';
 
 const AwsVaultService = AwsService(Vault);

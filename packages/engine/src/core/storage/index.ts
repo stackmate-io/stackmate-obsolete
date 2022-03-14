@@ -1,7 +1,6 @@
 import FileStorage from 'engine/core/storage/file';
-import { StorageChoice } from 'engine/types';
 import { STORAGE } from 'engine/constants';
-import { StorageAdapter } from 'engine/interfaces';
+import { StorageChoice, StorageAdapter } from 'engine/types';
 
 const getStoragAdaptereByType = (type: StorageChoice, attributes: object): StorageAdapter => {
   let adapter;

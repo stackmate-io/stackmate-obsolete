@@ -9,11 +9,10 @@ import { Manifest, Testing } from 'cdktf';
 import Project from 'engine/core/project';
 import Environment from 'engine/lib/environment';
 import DeployOperation from 'engine/operations/deploy';
-import { CloudStack } from 'engine/interfaces';
+import { getService } from 'engine/core/registry';
 import { ENVIRONMENT_VARIABLE, PROVIDER } from 'engine/constants';
 import { awsProviderConfiguration, awsVaultConfiguration } from 'tests/fixtures/aws';
-import { ProviderChoice, ServiceAttributes, ServiceScopeChoice } from 'engine/types';
-import { getService } from 'engine/core/registry';
+import { CloudStack, ProviderChoice, ServiceAttributes, ServiceScopeChoice } from 'engine/types';
 
 /**
  * Enhances the terraform stack with the properties we apply in the Stack class
